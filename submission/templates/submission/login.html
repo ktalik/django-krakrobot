@@ -1,7 +1,7 @@
 {% extends 'submission/base.html' %}
 {% block body %}
 	{{ state }}
-	<form action="/login/" method="post">
+	<form action="./login/" method="post">
     {% csrf_token %}
 		{% if next %}
 		<input type="hidden" name="next" value="{{ next }}" />
