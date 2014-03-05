@@ -54,11 +54,13 @@ def fetch_status(id_number):
     try:
         response = urllib2.urlopen(
             TEST_SERVER + 'check_status?id=%s' % id_number,
-            timeout=2
+            timeout=1
         ).read()
-        print str(response)[0:22]
+
         if str(response) and str(response)[0:22] == '"error_checking_status':
                 return {'processing': 'processing'}
+
+        print 'received from API:\n', response
 
         return json.loads(
             response
@@ -110,12 +112,12 @@ def my_results(request, message=''):
 
     for submission in submissions:
         result = get_result(submission.api_id)
-        print 'result', result
         result_string = ''
         if len(result) == 0:
             result_string = fetch_status(submission.api_id)
+            print 'result_string:\n', result_string
         else:
-            result_string = result[0]#.result
+            result_string = result[0].result
         params["submissions"].append(
             {
                 "id": submission.api_id,
@@ -125,10 +127,11 @@ def my_results(request, message=''):
 
         d = dict(result_string)
         passed = False
+        if 'timed_out' in d:
+            break
         if not ('processing' in d or 'error' in d or 'timed_out' in d):
 
             passed = True
-            print d
             for result in d["results"]:
                 if "error" in result:
                     passed = False

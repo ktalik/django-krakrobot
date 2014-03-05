@@ -25,6 +25,7 @@ div.warning {
     color: darkred;
     font-weight: bold;
     font-size: 12px;
+    background-color: rgba(200, 0, 0, 0.50);
 }
 
 div.welcome {

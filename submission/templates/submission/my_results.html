@@ -3,6 +3,14 @@
 
 <div class="results">
 {% for submission in submissions %}
+
+    {% if "timed_out" in submission.results %}
+        <div class="warning">
+        Simulator API is down. Sorry.
+        </div>
+    <br/>
+    {% endif %}
+
     <p class="submission">
     Submission {{ submission.id }}
         <i id="date">
@@ -13,11 +21,6 @@
     {% if "processing" in submission.results %}
         <div class="test">
         Processing...
-        </div>
-
-    {% elif "timed_out" in submission.results %}
-        <div class="message">
-        Simulator API is down. Sorry.
         </div>
 
     {% elif "error" in submission.results.results %}
