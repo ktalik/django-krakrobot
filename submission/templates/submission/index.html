@@ -1,8 +1,23 @@
 {% extends 'submission/base.html' %}
 {% block body %}
 
-        Welcome to our submission service. Your latest submission will be evaluated after the deadline. In case of
-problems with the submission system we accept also code submission via email. Please note that your code is tested on 2
-small maps (4x4 and 8x8) and the RAM limit is set to 500 MB. Also memory testing is only approximate. Good luck!
+
+        <div class="greeting">
+        Welcome to our submission service!<br><br>
+
+        Here you can <b>submit</b> and <b>test</b> your code.<br>
+        In case of problems with the submission system we accept
+        e-mail code submission.<br><br>
+
+        After the deadline <b>(9 March 2014, 23:59)</b>, your latest submission will be evaluated
+        on larger amount of tests and will compete with other participants.<br><br>
+
+        Please note that here your code is tested on 2 small maps (4x4 and 8x8) and the <b>RAM limit is set to 500 MB
+        </b>.<br>
+
+        Also memory testing is only approximate. <b>Good luck!</b>
+        </div>
+
+        <center><img src="http://www.krakrobot.pl/wp-content/themes/twentythirteen/img/logo.png"></center>
 
 {% endblock %}

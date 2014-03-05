@@ -32,6 +32,13 @@ div.welcome {
     color: maroon;
 }
 
+div.greeting {
+    font-size: 15px;
+    width: 900px;
+    margin-left: 50px;
+    background: rgba(200, 200, 200, 0.50);
+}
+
 div.headline {
     font-size: 18px;
     font-weight: bold;
