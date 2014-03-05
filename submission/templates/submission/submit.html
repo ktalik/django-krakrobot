@@ -1,0 +1,80 @@
+{% extends 'submission/base.html' %}
+{% block body %}
+	{{ state }}
+    <!--
+	<form enctype="multipart/form-data" action="/submit" method="post">
+		source code file:
+		<input type="submit" value="Send" />
+	</form>
+    -->
+    <input id="file" type="file" multiple onchange="startRead()">
+    <form action="/submit" method="post">
+        {% csrf_token %}
+        <input type="submit" value="Send code" />
+        <h2>Code preview:</h2>
+        <textarea style="font-size:11pt;font-family:Monospace,Courier;" id="output" cols="90" rows="24" name="source_code" value="" >
+        </textarea><br/>
+    </form>
+
+<script>
+function startRead()
+{
+  // obtain input element through DOM 
+  
+  var file = document.getElementById('file').files[0];
+  if(file)
+	{
+    getAsText(file);
+  }
+}
+
+function getAsText(readFile)
+{
+	var reader;
+	try
+	{
+    reader = new FileReader();
+	}catch(e)
+	{
+		document.getElementById('output').innerHTML = 
+			"Error: seems File API is not supported on your browser";
+	  return;
+  }
+  
+  // Read file into memory as UTF-8      
+  reader.readAsText(readFile, "UTF-8");
+  
+  // Handle progress, success, and errors
+  reader.onprogress = updateProgress;
+  reader.onload = loaded;
+  reader.onerror = errorHandler;
+}
+
+function updateProgress(evt)
+{
+  if (evt.lengthComputable)
+	{
+    // evt.loaded and evt.total are ProgressEvent properties
+    var loaded = (evt.loaded / evt.total);
+  }
+}
+
+function loaded(evt)
+{
+  // Obtain the read file data    
+  var fileString = evt.target.result;
+  document.getElementById('output').value = fileString;
+}
+
+function errorHandler(evt)
+{
+  if(evt.target.error.code == evt.target.error.NOT_READABLE_ERR)
+	{
+    // The file could not be read
+		document.getElementById('output').value = "Error reading file..."
+  }
+}
+
+</script>
+
+{% endblock %}

@@ -1,0 +1,56 @@
+
+* {
+    margin: 0px;
+    padding: 10px;
+    font-family: "Droid Serif", sans-serif;
+    text-decoration: none;
+}
+
+a {
+    color: #606060;
+    font-weight: bold;
+}
+
+body {
+    background-image: url("images/background.png");
+    background-color: lightgrey;
+}
+
+div.message {
+    color: green;
+    font-size: 16px;
+}
+
+div.warning {
+    color: darkred;
+    font-weight: bold;
+    font-size: 12px;
+}
+
+div.welcome {
+    color: maroon;
+}
+
+div.headline {
+    font-size: 18px;
+    font-weight: bold;
+}
+
+*.submission {
+    font-weight: bold;
+    background: rgba(128, 128, 128, 0.50);
+}
+
+*.submission i {
+    font-weight: normal;
+    font-size: 12px;
+}
+
+*.test {
+    font-size: 14px;
+    background: rgba(128, 128, 128, 0.10);
+}
+
+table {
+    font-size: 14px;
+}

@@ -1,0 +1,67 @@
+{% extends 'submission/base.html' %}
+{% block body %}
+
+<div class="results">
+{% for submission in submissions %}
+    <p class="submission">
+    Submission {{ submission.id }}
+        <i id="date">
+        ({{ submission.results.time }})
+        </i>
+    </p>
+
+    {% if "processing" in submission.results %}
+        <div class="test">
+        Processing...
+        </div>
+
+    {% elif "timed_out" in submission.results %}
+        <div class="message">
+        Simulator API is down. Sorry.
+        </div>
+
+    {% elif "error" in submission.results.results %}
+        <div class="test">
+        Submission error.
+        </div>
+
+    {% else %}
+
+        {% for result in submission.results.results %}
+
+            <div class="test">
+            TEST:
+            <div class="result">
+            <table style="width:500px">
+                <tr>
+                <td><b>Achieved goal:</b></td>
+                <td>
+                {{ result.goal_achieved }}</td>
+                </tr>
+                <tr>
+                <td><b>Error:</b></td>
+                <td>{{ result.error }}</td>
+                </tr>
+                <tr>
+                <td><b>Time elapsed:</b></td>
+                <td>{{ result.time_elapsed }}</td>
+                </tr>
+                <tr>
+                <td><b>Time consumed robot:</b></td>
+                <td>{{ result.time_consumed_robot }}</td>
+                </tr>
+                <tr>
+                <td><b>Memory footprint estimation (MB):</b></td>
+                <td>{{ result.memory_footprint_estimation_mb }}</td>
+                </tr>
+            </table>
+
+            </div>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+{% endfor %}
+</div>
+
+{% endblock %}

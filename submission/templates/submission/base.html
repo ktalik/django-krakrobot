@@ -1,0 +1,37 @@
+{% load static %}
+{% get_static_prefix as STATIC_URL %}
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Krakrobot 2014 Qualifications</title>
+    <link type="text/css" rel="stylesheet" href="{% static 'style.css' %}" />
+</head>
+<body>
+    <div class="welcome headline">
+        {% if user.is_authenticated %}
+            Hello, {{ user.username }}!<br>
+    </div>
+    <div class="welcome">
+            Welcome to Krakrobot 2014 Qualifications web.
+        {% else %}
+            Hello, guest! Krakrobot 2014 Qualifications take place here. <br>
+    </div>
+    <div class="welcome">
+            If you are a member of a team, please login <a href="login">here</a>.
+        {% endif %}
+    </div>
+    <nav class="menubar mainmenu">
+        <a class="item" href="/">home</a>
+        <a class="item" href="/results">results</a>
+        {% if user.is_authenticated %}
+        <a class="item" href="/submit">submit</a>
+        <a class="item" href="/my_results">my team results</a>
+        <a class="item" href="/logout">logout</a>
+        {% endif %}
+    </nav>
+    <div class="message">
+        {{ message }}
+    </div>
+    {% block body %} {% endblock %}
+</body>
+</html>

@@ -1,0 +1,25 @@
+{% extends 'submission/base.html' %}
+{% block body %}
+
+<div class="results">
+<h2>Team results</h2>
+<table style="width:500px">
+{% for team in teams %}
+    <tr>
+    <td><p class="submission"> Team: {{ team.name }} </p></td>
+    <td>
+    {% if team.passed %}
+        <p style="background-color:lightgreen;">
+        Passed!
+        </p>
+    {% else %}
+        Still trying...
+    {% endif %}
+    </td>
+    </tr>
+
+{% endfor %}
+</table>
+</div>
+
+{% endblock %}
