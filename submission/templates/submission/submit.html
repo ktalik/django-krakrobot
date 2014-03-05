@@ -8,7 +8,7 @@
 	</form>
     -->
     <input id="file" type="file" multiple onchange="startRead()">
-    <form action="/submit" method="post">
+    <form action="./submit" method="post">
         {% csrf_token %}
         <input type="submit" value="Send code" />
         <h2>Code preview:</h2>
