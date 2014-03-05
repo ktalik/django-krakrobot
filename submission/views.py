@@ -108,6 +108,7 @@ def my_results(request, message=''):
     params = {'submissions': [], 'message': message}
     team = get_team(request.user)
     submissions = get_submissions(team)
+    in_db = False
 
     for submission in submissions:
         result = get_result(submission.api_id)
@@ -115,6 +116,7 @@ def my_results(request, message=''):
         if len(result) == 0:
             result_string = fetch_status(submission.api_id)
         else:
+            in_db = True
             result_string = result[0].result
         params["submissions"].append(
             {
@@ -125,21 +127,23 @@ def my_results(request, message=''):
 
         s = str(result_string).replace("{u'", "{'").replace(" u'", "'")
         d = eval(s)
-        print '\n', eval(s)
         passed = False
         if not ('processing' in d or 'error' in d or 'timed_out' in d):
-            result_in_db = Result()
-            result_in_db.api_id = submission.api_id
-            result_in_db.result = str(result_string)
-            result_in_db.save()
+            if not in_db:
+                result_in_db = Result()
+                result_in_db.api_id = submission.api_id
+                result_in_db.result = str(result_string)
+                result_in_db.save()
             passed = True
             for result in d["results"]:
                 if "error" in result:
                     passed = False
-                    break
+                    continue
+                if result['goal_achieved']:
+                    print 'A'
                 if not result["goal_achieved"]:
                     passed = False
-                    break
+                    continue
         if passed:
             team.passed = True
             team.save()
