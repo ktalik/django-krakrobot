@@ -178,14 +178,15 @@ def login_user(request):
         if user is not None:
             if user.is_active:
                 login(request, user)
-                message = "Logged in!"
+                return redirect('./..')
+                #message = "Logged in!"
             else:
                 message = "Account is not active. Please contact the site admin."
         else:
             message = "Username and/or password incorrect."
 
         return render_to_response(
-            'submission/index.html',
+            'submission/login.html',
             {
                 'message': message,
             },
