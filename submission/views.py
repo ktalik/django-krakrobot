@@ -6,7 +6,7 @@ import json
 import socket
 import time
 
-from django.shortcuts import render_to_response
+from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.http import HttpResponse
 from django.http import HttpResponseRedirect
