@@ -52,6 +52,20 @@ div.headline {
     background: rgba(128, 128, 128, 0.10);
 }
 
+*.result {
+    padding: 5px;
+}
+
 table {
     font-size: 14px;
+}
+
+td {
+    padding: 2px;
+    vertical-align: top;
+    overflow: hidden;
+}
+
+td.log {
+    width: 100px;
 }

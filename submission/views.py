@@ -17,7 +17,7 @@ from django.template import RequestContext
 from submission.forms import UploadFileForm
 from submission.models import Submission, Team, Result
 
-TEST_SERVER = "http://ocean-db.no-ip.biz:8989/"
+TEST_SERVER = "http://188.226.161.198:8989/"
 
 
 ### UTILS ###
@@ -33,7 +33,8 @@ def send_code(code, team_name):
     id_number = int(
         urllib2.urlopen(
             TEST_SERVER + 'send',
-            params
+            params,
+            7
         ).read()
     )
     return id_number
@@ -54,13 +55,11 @@ def fetch_status(id_number):
     try:
         response = urllib2.urlopen(
             TEST_SERVER + 'check_status?id=%s' % id_number,
-            timeout=1
+            timeout=7
         ).read()
 
         if str(response) and str(response)[0:22] == '"error_checking_status':
                 return {'processing': 'processing'}
-
-        print 'received from API:\n', response
 
         return json.loads(
             response
@@ -115,22 +114,24 @@ def my_results(request, message=''):
         result_string = ''
         if len(result) == 0:
             result_string = fetch_status(submission.api_id)
-            print 'result_string:\n', result_string
         else:
             result_string = result[0].result
         params["submissions"].append(
             {
                 "id": submission.api_id,
-                "results": result_string,
+                "results": eval(str(result_string)),
             }
         )
 
-        d = dict(result_string)
+        s = str(result_string).replace("{u'", "{'").replace(" u'", "'")
+        d = eval(s)
+        print '\n', eval(s)
         passed = False
-        if 'timed_out' in d:
-            break
         if not ('processing' in d or 'error' in d or 'timed_out' in d):
-
+            result_in_db = Result()
+            result_in_db.api_id = submission.api_id
+            result_in_db.result = str(result_string)
+            result_in_db.save()
             passed = True
             for result in d["results"]:
                 if "error" in result:

@@ -4,13 +4,6 @@
 <div class="results">
 {% for submission in submissions %}
 
-    {% if "timed_out" in submission.results %}
-        <div class="warning">
-        Simulator API is down. Sorry.
-        </div>
-    <br/>
-    {% endif %}
-
     <p class="submission">
     Submission {{ submission.id }}
         <i id="date">
@@ -21,6 +14,11 @@
     {% if "processing" in submission.results %}
         <div class="test">
         Processing...
+        </div>
+
+    {% elif "timed_out" in submission.results %}
+        <div class="warning">
+        Simulator API is down. Sorry.
         </div>
 
     {% elif "error" in submission.results.results %}
@@ -35,7 +33,7 @@
             <div class="test">
             TEST:
             <div class="result">
-            <table style="width:500px">
+            <table style="width:800px">
                 <tr>
                 <td><b>Achieved goal:</b></td>
                 <td>
@@ -56,6 +54,18 @@
                 <tr>
                 <td><b>Memory footprint estimation (MB):</b></td>
                 <td>{{ result.memory_footprint_estimation_mb }}</td>
+                </tr>
+                <tr>
+                <td><b>Log:</b></td>
+                <td class="log">
+                    <table style="width:700px">
+                    {% for line in result.log %}
+                        <tr>
+                            <td>{{ line }}</td>
+                        </tr>
+                    {% endfor %}
+                    </table>
+                </td>
                 </tr>
             </table>
 
