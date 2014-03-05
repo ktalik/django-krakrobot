@@ -35,35 +35,35 @@
             <div class="result">
             <table style="width:800px">
                 <tr>
-                <td><b>Achieved goal:</b></td>
+                <td class="title"><b>Achieved goal:</b></td>
                 <td>
                 {{ result.goal_achieved }}</td>
                 </tr>
                 <tr>
-                <td><b>Error:</b></td>
+                <td class="title"><b>Error:</b></td>
                 <td>{{ result.error }}</td>
                 </tr>
                 <tr>
-                <td><b>Time elapsed:</b></td>
+                <td class="title"><b>Time elapsed:</b></td>
                 <td>{{ result.time_elapsed }}</td>
                 </tr>
                 <tr>
-                <td><b>Time consumed robot:</b></td>
+                <td class="title"><b>Time consumed robot:</b></td>
                 <td>{{ result.time_consumed_robot }}</td>
                 </tr>
                 <tr>
-                <td><b>Memory footprint estimation (MB):</b></td>
+                <td class="title"><b>Memory footprint estimation (MB):</b></td>
                 <td>{{ result.memory_footprint_estimation_mb }}</td>
                 </tr>
                 <tr>
-                <td><b>Log:</b></td>
+                <td class="title"><b>Log:</b></td>
                 <td class="log">
                     <table style="width:700px">
+                        <td><tr>
                     {% for line in result.log %}
-                        <tr>
-                            <td>{{ line }}</td>
-                        </tr>
+                            {{ line }}<br>
                     {% endfor %}
+                        </tr></td>
                     </table>
                 </td>
                 </tr>

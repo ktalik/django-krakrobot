@@ -67,12 +67,14 @@ table {
     font-size: 14px;
 }
 
-td {
-    padding: 2px;
-    vertical-align: top;
+table td.title {
+    width: 400px;
     overflow: hidden;
+    white-space: nowrap;
+    vertical-align: top;
 }
 
-td.log {
-    width: 100px;
+table td.log {
+    font-family: Mono;
+    font-size: 11px;
 }
