@@ -159,7 +159,8 @@ def results(request):
 
     for team in teams:
         passed = team.passed
-        params["teams"].append( { "name" : team.name, "passed" : passed } )
+        if team.name != 'TestTeam':
+            params["teams"].append( { "name" : team.name, "passed" : passed } )
 
     return render(request, 'submission/results.html', params)
 
