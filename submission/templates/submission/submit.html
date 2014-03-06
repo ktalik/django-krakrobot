@@ -10,6 +10,7 @@
     <input id="file" type="file" multiple onchange="startRead()">
     <form action="./submit" method="post">
         {% csrf_token %}
+        <h6>We are sorry, but UTF-8 characters are not supported. Please submit source coded in ASCII!</h6>
         <input type="submit" value="Send code" />
         <h2>Code preview:</h2>
         <textarea style="font-size:11pt;font-family:Monospace,Courier;" id="output" cols="90" rows="24" name="source_code" value="" >
