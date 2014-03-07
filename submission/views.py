@@ -135,13 +135,13 @@ def my_results(request, message=''):
                 result_in_db.result = str(result_string)
                 result_in_db.save()
             passed = True
-            for result in d["results"]:
-                if "error" in result:
+            print d['results']
+            for result in d['results']:
+                if result == 'error' \
+                        or result['error']:
                     passed = False
                     continue
-                if result['goal_achieved']:
-                    print 'A'
-                if not result["goal_achieved"]:
+                if not result['goal_achieved']:
                     passed = False
                     continue
         if passed:
