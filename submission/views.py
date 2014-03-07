@@ -138,10 +138,10 @@ def my_results(request, message=''):
             print d['results']
             for result in d['results']:
                 if result == 'error' \
-                        or result['error']:
+                        or result.get('error', False):
                     passed = False
                     continue
-                if not result['goal_achieved']:
+                if not result.get('goal_achieved', False):
                     passed = False
                     continue
         if passed:
