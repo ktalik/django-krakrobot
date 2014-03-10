@@ -1,6 +1,11 @@
 {% extends 'submission/base.html' %}
 {% block body %}
 	{{ state }}
+    {% if submission_end %}
+        <div class="article">
+            <p>Submission time has passed... Thank you!</p>
+        </div>
+    {% else %}
     <!--
 	<form enctype="multipart/form-data" action="/submit" method="post">
 		source code file:
@@ -77,5 +82,5 @@ function errorHandler(evt)
 }
 
 </script>
-
+        {% endif %}
 {% endblock %}

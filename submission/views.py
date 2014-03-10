@@ -3,27 +3,20 @@
 import urllib
 import urllib2
 import json
-import socket
 import time
 
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login, logout
-from django.http import HttpResponse
-from django.http import HttpResponseRedirect
 from django.shortcuts import render
-from django.views.decorators.csrf import csrf_protect
 from django.template import RequestContext
 
-from submission.forms import UploadFileForm
 from submission.models import Submission, Team, Result
 
 TEST_SERVER = "http://188.226.161.198:8989/"
+SUBMISSION_DEADLINE = time.struct_time([2014, 3, 10, 0, 0, 0, 0, 0, 0])
 
 
-### UTILS ###
-
-
-def send_code(code, team_name):
+def send_code(code, team_name):  # TODO: Move to utils
     params = urllib.urlencode(
         {
             'code': json.dumps(code),
@@ -40,7 +33,7 @@ def send_code(code, team_name):
     return id_number
 
 
-def submit_code(a_code, a_team):
+def submit_code(a_code, a_team):  # TODO: Move to utils
     id_number = send_code(a_code, a_team.name)
     submission = Submission(
         api_id=id_number,
@@ -51,7 +44,7 @@ def submit_code(a_code, a_team):
     return id_number
 
 
-def fetch_status(id_number):
+def fetch_status(id_number):  # TODO: Move to utils
     try:
         response = urllib2.urlopen(
             TEST_SERVER + 'check_status?id=%s' % id_number,
@@ -69,19 +62,16 @@ def fetch_status(id_number):
         return {'timed_out': 'timed_out'}
 
 
-def get_team(user):
+def get_team(user):  # TODO: Move to utils
     return Team.objects.filter(user__exact=user)[0]
 
 
-def get_submissions(team):
+def get_submissions(team):  # TODO: Move to utils
     return Submission.objects.filter(team__exact=team)
 
 
-def get_result(id_number):
+def get_result(id_number):  # TODO: Move to utils
     return Result.objects.filter(api_id__exact=id_number)
-
-
-### VIEWS ###
 
 
 def index(request, params={}):
@@ -98,7 +88,9 @@ def submit(request):
         id_number = submit_code(code, team)
         return my_results(request, message='Your code has been sent!')
 
-    return render(request, 'submission/submit.html', {})
+    submission_end = time.localtime() > SUBMISSION_DEADLINE
+
+    return render(request, 'submission/submit.html', {'submission_end': submission_end})
 
 
 def my_results(request, message=''):
@@ -155,12 +147,12 @@ def my_results(request, message=''):
 
 def results(request):
     teams = Team.objects.all()
-    params = { "teams" : [] }
+    params = {'teams': []}
 
     for team in teams:
         passed = team.passed
         if team.name != 'TestTeam':
-            params["teams"].append( { "name" : team.name, "passed" : passed } )
+            params["teams"].append({'name': team.name, 'passed': passed})
 
     return render(request, 'submission/results.html', params)
 
@@ -185,7 +177,6 @@ def login_user(request):
             if user.is_active:
                 login(request, user)
                 return redirect('./..')
-                #message = "Logged in!"
             else:
                 message = "Account is not active. Please contact the site admin."
         else:
