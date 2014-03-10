@@ -108,9 +108,9 @@ def my_results(request, message=''):
     params = {'submissions': [], 'message': message}
     team = get_team(request.user)
     submissions = get_submissions(team)
-    in_db = False
 
     for submission in submissions:
+        in_db = False
         result = get_result(submission.api_id)
         result_string = ''
         if len(result) == 0:
