@@ -154,6 +154,7 @@ def results(request):
         if team.name != 'TestTeam':
             params["teams"].append({'name': team.name, 'passed': passed})
 
+    params['submission_ended'] = time.localtime() > SUBMISSION_DEADLINE
     return render(request, 'submission/results.html', params)
 
 

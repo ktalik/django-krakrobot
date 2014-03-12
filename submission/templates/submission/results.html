@@ -5,6 +5,7 @@
 <h2>Team results</h2>
 <table style="width:500px">
 {% for team in teams %}
+
     <tr>
     <td><p class="submission"> Team: {{ team.name }} </p></td>
     <td>
@@ -13,7 +14,13 @@
         Passed!
         </p>
     {% else %}
-        Still trying...
+        <p>
+        {% if submission_ended %}
+            Not passed...
+        {% else %}
+            Still trying...
+        {% endif %}
+        </p>
     {% endif %}
     </td>
     </tr>
