@@ -10,10 +10,10 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.template import RequestContext
 
-from submission.models import Submission, Team, Result
+from models import Submission, Team, Result
 
 TEST_SERVER = "http://188.226.161.198:8989/"
-SUBMISSION_DEADLINE = time.struct_time([2014, 3, 10, 0, 0, 0, 0, 0, 0])
+SUBMISSION_DEADLINE = time.struct_time([2016, 3, 10, 0, 0, 0, 0, 0, 0])
 
 
 def send_code(code, team_name):  # TODO: Move to utils
@@ -34,7 +34,7 @@ def send_code(code, team_name):  # TODO: Move to utils
 
 
 def submit_code(a_code, a_team):  # TODO: Move to utils
-    id_number = send_code(a_code, a_team.name)
+    id_number = str(hash(time.time()))#send_code(a_code, a_team.name)
     submission = Submission(
         api_id=id_number,
         team=a_team,

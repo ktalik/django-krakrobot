@@ -1,6 +1,7 @@
-from django.conf.urls import patterns, url
+from django.conf.urls import patterns, url, include
+from django.contrib import admin
 
-from submission import views
+import views
 
 urlpatterns = patterns('',
     url(r'^$', views.index, name='index'),
@@ -9,4 +10,5 @@ urlpatterns = patterns('',
     url(r'^submit', views.submit, name='submit'),
     url(r'^my_results', views.my_results, name='my_results'),
     url(r'^results', views.results, name='results'),
+    url(r'^admin', include(admin.site.urls)),
 )
