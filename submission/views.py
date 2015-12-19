@@ -34,7 +34,7 @@ def send_code(code, team_name):  # TODO: Move to utils
 
 
 def submit_code(a_code, a_team):  # TODO: Move to utils
-    id_number = str(hash(time.time()))#send_code(a_code, a_team.name)
+    id_number = hash(time.time())#send_code(a_code, a_team.name)
     submission = Submission(
         api_id=id_number,
         team=a_team,
