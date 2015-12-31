@@ -4,5 +4,4 @@
 *.swp
 
 static/admin
-submission/migrations/
 src/
