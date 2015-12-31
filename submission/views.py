@@ -85,14 +85,14 @@ def submit(request):
         base_dir = os.path.dirname(__file__)
         code = request.POST.get('source_code')
         id_number = submit_code(code, team)
-        filename = base_dir + '../src/' + str(id_number) + '.py'
+        filename = base_dir + '/../src/' + str(id_number) + '.py'
 
         with open(filename, 'w') as src:
             src.write(code)
         
         print id_number, 'filename', filename
         cmd = [
-            'python2.7', base_dir + '../bin/simulator/main.py', '-c', '-r',
+            'python2.7', base_dir + '/../bin/simulator/main.py', '-c', '-r',
             # It is important to concatenate strings here
             # It means passing option parameter in quotes: -r "python2.7 path"
             'python2.7 ' + filename]
