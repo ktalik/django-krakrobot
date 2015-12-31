@@ -2,9 +2,13 @@
 {% block body %}
 	{{ state }}
     {% if submission_end %}
-        <div class="article">
-            <p>Submission time has passed... Thank you!</p>
-        </div>
+<div class="article">
+    <p>Submission time has passed... Thank you!</p>
+</div>
+    {% elif not team %}
+<div class="warning">
+        {% include 'submission/messages/no_team.html' %}
+</div>
     {% else %}
     <!--
 	<form enctype="multipart/form-data" action="/submit" method="post">

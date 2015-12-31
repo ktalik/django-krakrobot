@@ -1,80 +1,162 @@
 {% extends 'submission/base.html' %}
 {% block body %}
 
-<div class="results">
-{% for submission in submissions %}
+{% if team %}
 
-    <p class="submission">
-    Submission {{ submission.id }}
-        <i id="date">
-        ({{ submission.results.time }})
-        </i>
-    </p>
+    {% if not submissions %}
 
-    {% if "processing" in submission.results %}
-        <div class="test">
-        Processing...
-        </div>
+    <div class="info">
+        {% include 'submission/messages/no_submissions.html' %}
+    </div>
 
-    {% elif "timed_out" in submission.results %}
-        <div class="warning">
-        Simulator API is down. Sorry.
-        </div>
-
-    {% elif "error" in submission.results.results %}
-        <div class="test">
-        Submission error.
-        </div>
-
-    {% else %}
-
-        {% for result in submission.results.results %}
-
-            <div class="test">
-            TEST:
-            <div class="result">
-            <table style="width:800px">
-                <tr>
-                <td class="title"><b>Achieved goal:</b></td>
-                <td>
-                {{ result.goal_achieved }}</td>
-                </tr>
-                <tr>
-                <td class="title"><b>Error:</b></td>
-                <td>{{ result.error }}</td>
-                </tr>
-                <tr>
-                <td class="title"><b>Time elapsed:</b></td>
-                <td>{{ result.time_elapsed }}</td>
-                </tr>
-                <tr>
-                <td class="title"><b>Time consumed robot:</b></td>
-                <td>{{ result.time_consumed_robot }}</td>
-                </tr>
-                <tr>
-                <td class="title"><b>Memory footprint estimation (MB):</b></td>
-                <td>{{ result.memory_footprint_estimation_mb }}</td>
-                </tr>
-                <tr>
-                <td class="title"><b>Log:</b></td>
-                <td class="log">
-                    <table style="width:700px">
-                        <td><tr>
-                    {% for line in result.log %}
-                            {{ line }}<br>
-                    {% endfor %}
-                        </tr></td>
-                    </table>
-                </td>
-                </tr>
-            </table>
-
-            </div>
-        </div>
-        {% endfor %}
     {% endif %}
 
-{% endfor %}
+    <div class="results">
+    {% for submission in submissions %}
+
+        <p class="submission">
+<i id="date">
+Submission on {{ submission.date }}:
+</i>
+{{ submission.id }}
+        </p>
+
+        {% if "processing" in submission.results.0 %}
+            <div class="test">
+Processing...
+            </div>
+
+        {% elif "timed_out" in submission.results.0 %}
+            <div class="warning">
+Simulator API is down. Sorry.
+            </div>
+
+        {% elif "error" in submission.results.0 and submission.results.0.error %}
+            <div class="test">
+Submission error.
+            </div>
+
+        {% else %}
+
+            {% for result in submission.results %}
+
+                <div class="test">
+
+                <h2>
+                Test: <b>{{ result.test_name }}</b>
+                </h2>
+
+                <div class="result">
+                <table style="width:800px">
+
+                    <tr>
+                    <td class="title"><b>Goal:</b></td>
+                    <td>
+                    {{ result.goal_achieved | default:'unknown' }}</td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>Error:</b></td>
+                    <td>{{ result.error }}</td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>Simulation time:</b></td>
+                    <td>{{ result.sim_time }}</td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>CPU time:</b></td>
+                    <td>{{ result.cpu_time }}</td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>Picture:</b></td>
+                    <td>
+                    <table>
+                {% for row in result.picture %}
+                    <tr>
+                    {% for col in row %}
+
+                        <td
+                        {% if col.wall %}
+                            style="background-color: darkred;"
+                        {% else %}
+                            style=
+                            "
+                            background-color: rgba(
+                                {{col.color.0}},
+                                {{col.color.1}},
+                                {{col.color.2}},
+                                0.75);
+                            "
+                        {% endif %}
+                            height="52"
+                            width="32"
+                        >
+
+                        {% if col.start %}
+                            <b>
+                            &#x2691;S
+                            </b>
+                        {% endif %}
+
+                        {% if col.beep %}
+                            <b style="color:darkred;">
+                            &#x26A1;{{col.beep}}
+                            </b>
+                        {% endif %}
+                        </td>
+
+                    {% endfor %}
+                    </tr>
+                {% endfor %}
+                    </table>
+                    </td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>Picture meaning:</b></td>
+                    <td>
+<b>
+&#x2691;S
+</b>
+- starting point <br>
+<b style="color:darkred;">
+&#x26A1;X
+</b>
+- beep number X<br>
+                    </td>
+                    </tr>
+
+                    <tr class="log">
+                    <td class="title"><b>Log:</b></td>
+                    <td class="log">
+                        <div style="width: 700px;">
+                            <p>
+                {% for line in result.log %}
+                    {{ line }}<br>
+                {% endfor %}
+                            </p>
+                        </div>
+                    </td>
+                    </tr>
+                </table>
+
+                </div>
+            </div>
+            {% endfor %}
+        {% endif %}
+
+    {% endfor %}
+    </div>
+
+{% else %}
+
+<div class="warning">
+    {% include 'submission/messages/no_team.html' %}
 </div>
+
+{% endif %}
 
 {% endblock %}

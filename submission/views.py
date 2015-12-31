@@ -4,6 +4,8 @@ import urllib
 import urllib2
 import json
 import time
+import subprocess
+import uuid
 
 from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login, logout
@@ -12,39 +14,29 @@ from django.template import RequestContext
 
 from models import Submission, Team, Result
 
-TEST_SERVER = "http://188.226.161.198:8989/"
 SUBMISSION_DEADLINE = time.struct_time([2016, 3, 10, 0, 0, 0, 0, 0, 0])
 
 
-def send_code(code, team_name):  # TODO: Move to utils
-    params = urllib.urlencode(
-        {
-            'code': json.dumps(code),
-            'team': json.dumps(team_name)
-        }
-    )
-    id_number = int(
-        urllib2.urlopen(
-            TEST_SERVER + 'send',
-            params,
-            7
-        ).read()
-    )
-    return id_number
+def get_id():
+    return uuid.uuid4()
 
-
-def submit_code(a_code, a_team):  # TODO: Move to utils
-    id_number = hash(time.time())#send_code(a_code, a_team.name)
+def submit_code(a_code, a_team):
+    """
+    Save code submission and return id
+    """
+    id_number = get_id()
     submission = Submission(
-        api_id=id_number,
+        id=id_number,
         team=a_team,
-        code=a_code
+        code=a_code,
     )
     submission.save()
     return id_number
 
 
-def fetch_status(id_number):  # TODO: Move to utils
+def fetch_status(id_number):
+    return u'{"processing": "processing"}'
+
     try:
         response = urllib2.urlopen(
             TEST_SERVER + 'check_status?id=%s' % id_number,
@@ -52,7 +44,7 @@ def fetch_status(id_number):  # TODO: Move to utils
         ).read()
 
         if str(response) and str(response)[0:22] == '"error_checking_status':
-                return {'processing': 'processing'}
+                return '{"processing": "processing"}'
 
         return json.loads(
             response
@@ -62,16 +54,20 @@ def fetch_status(id_number):  # TODO: Move to utils
         return {'timed_out': 'timed_out'}
 
 
-def get_team(user):  # TODO: Move to utils
-    return Team.objects.filter(user__exact=user)[0]
+def get_team(user):
+    teams = Team.objects.filter(user__exact=user)
+    team = None
+    if teams:
+        team = teams[0]
+    return team
 
 
-def get_submissions(team):  # TODO: Move to utils
+def get_submissions(team):
     return Submission.objects.filter(team__exact=team)
 
 
-def get_result(id_number):  # TODO: Move to utils
-    return Result.objects.filter(api_id__exact=id_number)
+def get_results(id_number):
+    return Result.objects.filter(id__exact=id_number)
 
 
 def index(request, params={}):
@@ -82,49 +78,108 @@ def submit(request):
     if not request.user.is_authenticated():
         return index(request)
 
+    team = get_team(request.user)
+
     if request.POST:
         code = request.POST.get('source_code')
-        team = get_team(request.user)
         id_number = submit_code(code, team)
+        filename = 'src/' + str(id_number) + '.py'
+
+        with open(filename, 'w') as src:
+            src.write(code)
+        
+        print id_number, 'filename', filename
+        cmd = [
+            'python2.7', 'bin/simulator/main.py', '-c', '-r',
+            # It is important to concatenate strings here
+            # It means passing option parameter in quotes: -r "python2.7 path"
+            'python2.7 ' + filename]
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
+        
+        # TODO: Async
+        result = '{}'
+        lines = ''
+        lines = stdout.splitlines()
+        result = lines[-1]
+        print id_number, 'result', result
+        
+        db_result = Result()
+        db_result.id = id_number
+        db_result.report = result
+        db_result.log = stdout + stderr
+        print id_number, 'log', db_result.log
+        db_result.save()
+        
         return my_results(request, message='Your code has been sent!')
 
     submission_end = time.localtime() > SUBMISSION_DEADLINE
 
-    return render(request, 'submission/submit.html', {'submission_end': submission_end})
+    return render(
+        request,
+        'submission/submit.html',
+        {'submission_end': submission_end, 'team': team}
+    )
 
 
 def my_results(request, message=''):
     if not request.user.is_authenticated():
         return index(request)
 
-    params = {'submissions': [], 'message': message}
+    params = {'submissions': [], 'message': message, 'team': None}
     team = get_team(request.user)
+    params['team'] = team
     submissions = get_submissions(team)
 
     for submission in submissions:
         in_db = False
-        result = get_result(submission.api_id)
-        result_string = ''
-        if len(result) == 0:
-            result_string = fetch_status(submission.api_id)
+        results = get_results(submission.id)
+        result_string = '{}'
+        if len(results) == 0:
+            result_string = fetch_status(submission.id)
         else:
             in_db = True
-            result_string = result[0].result
-        params["submissions"].append(
-            {
-                "id": submission.api_id,
-                "results": eval(str(result_string)),
-            }
-        )
+            result_string = results[0].report
+        d = json.loads(result_string)
+        d['log'] = results[0].log.splitlines()
 
-        s = str(result_string).replace("{u'", "{'").replace(" u'", "'")
-        d = eval(s)
+        d['picture'] = []
+        for r in d['map']['color_board']:
+            row = []
+            for c in r:
+                # FIXME: white is [0, 0, 0]
+                if c == [0, 0, 0]:
+                    c = [255, 255, 255]
+                col = {'color': c}
+                row.append(col)
+            d['picture'].append(row)
+
+        for num, beep in enumerate(d['map']['beeps']):
+            d['picture'][beep[0]][beep[1]]['beep'] = str(num)
+
+        for r, row in enumerate(d['map']['board']):
+            for c, col in enumerate(row):
+                if col == 1:
+                    d['picture'][r][c]['wall'] = True
+                elif col == 3:
+                    d['picture'][r][c]['start'] = True
+
+
+        d['test_name'] = d['map']['file_name'].split('/')[-1]
+
+        params["submissions"].append({
+            "id": submission.id,
+            "results": [d],
+            "date": submission.date
+        })
+
         passed = False
         if not ('processing' in d or 'error' in d or 'timed_out' in d):
             if not in_db:
                 result_in_db = Result()
-                result_in_db.api_id = submission.api_id
-                result_in_db.result = str(result_string)
+                result_in_db.id = submission.id
+                result_in_db.report = str(result_string)
                 result_in_db.save()
             passed = True
             print d['results']

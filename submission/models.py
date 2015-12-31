@@ -1,5 +1,9 @@
+import time
+import uuid
+
 from django.db import models
 from django.contrib.auth.models import User
+from django.utils import timezone
 
 
 DB_NAME_LENGTH = 100
@@ -10,23 +14,26 @@ class Team(models.Model):
     user = models.ForeignKey(User)
     passed = models.BooleanField()
 
-    def __unicode__(self):  # Python 3: def __str__(self):
+    def __unicode__(self):
         return self.name
 
 
 class Submission(models.Model):
-    api_id = models.IntegerField()
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     team = models.ForeignKey(Team)
     code = models.TextField()
+    date = models.DateTimeField(default=timezone.now)
 
-    def __unicode__(self):  # Python 3: def __str__(self):
-        return unicode(self.api_id) + ' - submitted by: ' + unicode(self.team)
+    def __unicode__(self):
+        return unicode(self.date) + ' ' + unicode(self.id) + \
+            ' - submitted by: ' + unicode(self.team)
 
 
 class Result(models.Model):
-    api_id = models.IntegerField()
-    result = models.CharField(max_length=1000)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    report = models.CharField(max_length=1000, default='{}')
+    log = models.CharField(max_length=10000, default='')
 
-    def __unicode__(self):  # Python 3: def __str__(self):
-        return unicode(self.api_id) + ' - with result: ' + unicode(self.result)
+    def __unicode__(self):
+        return unicode(self.id) + ' - with report: ' + unicode(self.report)
 
