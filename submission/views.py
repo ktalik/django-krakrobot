@@ -99,7 +99,9 @@ def submit(request):
         proc = subprocess.Popen(
             cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         stdout, stderr = proc.communicate()
-        
+        # Log if something bad happened inside subprocess
+        print id_number, 'stderr', stderr
+
         # TODO: Async
         result = '{}'
         lines = ''
