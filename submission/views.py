@@ -17,6 +17,8 @@ from models import Submission, Team, Result
 
 SUBMISSION_DEADLINE = time.struct_time([2016, 3, 10, 0, 0, 0, 0, 0, 0])
 
+STATUS_PROCESSING = {"processing": "processing"}
+
 
 def get_id():
     return uuid.uuid4()
@@ -102,7 +104,6 @@ def submit(request):
         # Log if something bad happened inside subprocess
         print id_number, 'stderr', stderr
 
-        # TODO: Async
         result = '{}'
         lines = ''
         lines = stdout.splitlines()
@@ -141,36 +142,35 @@ def my_results(request, message=''):
         results = get_results(submission.id)
         result_string = '{}'
         if len(results) == 0:
-            result_string = fetch_status(submission.id)
+            d = STATUS_PROCESSING
         else:
             in_db = True
             result_string = results[0].report
-        d = json.loads(result_string)
-        d['log'] = results[0].log.splitlines()
+            d = json.loads(result_string)
+            d['log'] = results[0].log.splitlines()
 
-        d['picture'] = []
-        for r in d['map']['color_board']:
-            row = []
-            for c in r:
-                # FIXME: white is [0, 0, 0]
-                if c == [0, 0, 0]:
-                    c = [255, 255, 255]
-                col = {'color': c}
-                row.append(col)
-            d['picture'].append(row)
+            d['picture'] = []
+            for r in d['map']['color_board']:
+                row = []
+                for c in r:
+                    # FIXME: white is [0, 0, 0]
+                    if c == [0, 0, 0]:
+                        c = [255, 255, 255]
+                    col = {'color': c}
+                    row.append(col)
+                d['picture'].append(row)
 
-        for num, beep in enumerate(d['map']['beeps']):
-            d['picture'][beep[0]][beep[1]]['beep'] = str(num)
+            for num, beep in enumerate(d['map']['beeps']):
+                d['picture'][beep[0]][beep[1]]['beep'] = str(num)
 
-        for r, row in enumerate(d['map']['board']):
-            for c, col in enumerate(row):
-                if col == 1:
-                    d['picture'][r][c]['wall'] = True
-                elif col == 3:
-                    d['picture'][r][c]['start'] = True
+            for r, row in enumerate(d['map']['board']):
+                for c, col in enumerate(row):
+                    if col == 1:
+                        d['picture'][r][c]['wall'] = True
+                    elif col == 3:
+                        d['picture'][r][c]['start'] = True
 
-
-        d['test_name'] = d['map']['file_name'].split('/')[-1]
+            d['test_name'] = d['map']['file_name'].split('/')[-1]
 
         params["submissions"].append({
             "id": submission.id,
