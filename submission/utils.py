@@ -13,15 +13,15 @@ def unzip_zip(file_path):
         for name in zfile.namelist():
           (dirname, filename) = os.path.split(name)
           dirname = os.path.join(file_dir_path, dirname)
-          print "Decompressing " + filename + " on " + dirname
           if not os.path.exists(dirname):
             os.makedirs(dirname)
           zfile.extract(name, dirname)
     except zipfile.BadZipfile as error:
         return u'Plik powinien być typu archiwum'
     except Exception as error:
-        print error
+        print 'Trying zip failed:', error
         return u'Błąd przetwarzania przesyłanego pliku (zip)'
+    print 'Successfully extracted zip package'
 
 
 def unzip_tar(file_path):
@@ -31,8 +31,9 @@ def unzip_tar(file_path):
         tar.extractall(path=file_dir_path)
         tar.close()
     except Exception as error:
-        print error
+        print 'Trying tar failed:', error
         return u'Błąd przetwarzania przesyłanego pliku (tar)'
+    print 'Successfully extracted tar package'
 
 
 def unzip(file_path):

@@ -3,7 +3,7 @@ from django.contrib import admin
 
 import views
 
-urlpatterns = patterns('',
+urlpatterns = [
     url(r'^$', views.index, name='index'),
     url(r'^login', views.login_user, name='login'),
     url(r'^logout', views.logout_user, name='logout'),
@@ -12,4 +12,4 @@ urlpatterns = patterns('',
     url(r'^my_results', views.my_results, name='my_results'),
     url(r'^results', views.results, name='results'),
     url(r'^admin', include(admin.site.urls)),
-)
+]

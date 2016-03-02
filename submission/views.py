@@ -12,6 +12,7 @@ from django.shortcuts import render_to_response, redirect
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.template import RequestContext
+from django.utils.translation import ugettext_lazy as _
 
 import forms
 import utils
@@ -105,102 +106,52 @@ def submit(request):
             submission = Submission(
                 id=id_number,
                 team=team,
-                package=request.FILES['file']
+                package=request.FILES['file'],
+                command=request.POST['command'],
             )
             submission.save()
-            #return HttpResponseRedirect('/success/url/')
 
-            print dir(submission.package)
-            print submission.package.path
-            print submission.package.url
-            
             error = utils.unzip(submission.package.path)
             if error:
                 params['error'] = error
                 return render_submit(request, params)
 
-            return my_results(request, message='Your code has been sent!')
+            execute_tester(submission)
+
+            return my_results(
+                request, message=_(u'Rozwiązanie zostało wysłane.'))
 
     return render_submit(request, params)
 
 
-def xsubmit(request):
-    team = get_team(request.user)
-    submission_end = time.localtime() > SUBMISSION_DEADLINE
+def execute_tester(submission):
+    base_dir = os.path.dirname(__file__)
+    s_cmd = submission.command
+    s_id = submission.id
+    (s_path, s_pkg_name) = os.path.split(submission.package.path)
+    
+    os.chdir(s_path)
+    cmd = [
+        'python2.7', base_dir + '/../bin/simulator/main.py', '-c', '-r', s_cmd]
+    proc = subprocess.Popen(
+        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    stdout, stderr = proc.communicate()
 
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            instance = ModelWithFileField(file_field=request.FILES['file'])
-            instance.save()
-            handle_uploaded_file(request.FILES['file'])
-            #return HttpResponseRedirect('/success/url/')
-            return my_results(request, message='Your code has been sent!')
-    else:
-        form = UploadFileForm()
-    #return render(request, 'upload.html', {'form': form})
-    return render(
-        request,
-        'submission/submit.html',
-        {'submission_end': submission_end, 'team': team, 'form': form}
-    )
+    # Log testing process here
+    print s_id, 'stderr', stderr
 
+    # Log result
+    lines = stdout.splitlines()
+    result = lines[3:]
 
-def handle_uploaded_file(f):
-    with open('some/file/name.txt', 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
+    db_result = Result()
+    db_result.id = s_id
+    db_result.report = ''.join(result)
+    print s_id, 'report', db_result.report
+    db_result.log = stdout + stderr
+    db_result.save()
 
-
-def old_submit(request):
-    if not request.user.is_authenticated():
-        return index(request)
-
-    team = get_team(request.user)
-
-    if request.POST:
-        base_dir = os.path.dirname(__file__)
-        code = request.POST.get('source_code')
-        id_number = submit_code(code, team)
-        filename = base_dir + '/../src/' + str(id_number) + '.py'
-
-        with open(filename, 'w') as src:
-            src.write(code)
-
-        print id_number, 'filename', filename
-        cmd = [
-            'python2.7', base_dir + '/../bin/simulator/main.py', '-c', '-r',
-            # It is important to concatenate strings here
-            # It means passing option parameter in quotes: -r "python2.7 path"
-            'python2.7 ' + filename]
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
-        # Log if something bad happened inside subprocess
-        print id_number, 'stderr', stderr
-
-        result = '{}'
-        lines = ''
-        lines = stdout.splitlines()
-        result = lines[-1]
-        print id_number, 'result', result
-
-        db_result = Result()
-        db_result.id = id_number
-        db_result.report = result
-        db_result.log = stdout + stderr
-        print id_number, 'log', db_result.log
-        db_result.save()
-
-        return my_results(request, message='Your code has been sent!')
-
-    submission_end = time.localtime() > SUBMISSION_DEADLINE
-
-    return render(
-        request,
-        'submission/submit.html',
-        {'submission_end': submission_end, 'team': team}
-    )
+    return result
 
 
 def my_results(request, message=''):
@@ -224,6 +175,7 @@ def my_results(request, message=''):
             d = json.loads(result_string)
             d['log'] = results[0].log.splitlines()
 
+            """
             d['picture'] = []
             for r in d['map']['color_board']:
                 row = []
@@ -244,6 +196,7 @@ def my_results(request, message=''):
                         d['picture'][r][c]['wall'] = True
                     elif col == 3:
                         d['picture'][r][c]['start'] = True
+            """
 
             d['test_name'] = d['map']['file_name'].split('/')[-1]
 

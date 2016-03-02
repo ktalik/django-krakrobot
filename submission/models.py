@@ -5,6 +5,7 @@ from django.db import models
 from django.template.defaultfilters import filesizeformat
 from django.contrib.auth.models import User
 from django.utils import timezone
+from django.utils.translation import ugettext_lazy as _
 
 import forms
 
