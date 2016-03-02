@@ -30,7 +30,15 @@ body {
     background-color: lightgrey;
 }
 
-div.info {
+code {
+    font-family: monospace;
+}
+
+.code {
+    font-family: monospace;
+}
+
+.info {
     color: #666;
     font-weight: bold;
     font-size: 14px;
@@ -38,7 +46,7 @@ div.info {
     margin: 10;
 }
 
-div.message {
+.message {
     color: green;
     font-weight: bold;
     font-size: 14px;
@@ -46,7 +54,15 @@ div.message {
     margin: 10;
 }
 
-div.warning {
+.error {
+    color: darkred;
+    font-weight: bold;
+    font-size: 14px;
+    background-color: rgba(200, 0, 0, 0.5);
+    margin: 10;
+}
+
+.warning {
     color: darkred;
     font-weight: bold;
     font-size: 14px;

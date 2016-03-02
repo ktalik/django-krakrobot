@@ -1,4 +1,4 @@
-# Create your views here.
+# coding: utf-8
 
 import urllib
 import urllib2
@@ -13,9 +13,12 @@ from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.template import RequestContext
 
+import forms
+import utils
+
 from models import Submission, Team, Result
 
-SUBMISSION_DEADLINE = time.struct_time([2016, 3, 10, 0, 0, 0, 0, 0, 0])
+SUBMISSION_DEADLINE = time.struct_time([2016, 5, 10, 0, 0, 0, 0, 0, 0])
 
 STATUS_PROCESSING = {"processing": "processing"}
 
@@ -77,7 +80,79 @@ def index(request, params={}):
     return render(request, 'submission/index.html', params)
 
 
+def render_submit(request, params={}):
+    team = get_team(request.user)
+    submission_end = time.localtime() > SUBMISSION_DEADLINE
+
+    if not 'form' in params:
+        params['form'] = forms.UploadSubmissionForm()
+
+    params.update({'submission_end': submission_end, 'team': team})
+
+    return render(request, 'submission/submit.html', params)
+
+    
 def submit(request):
+    team = get_team(request.user)
+    params = dict()
+
+    if request.method == 'POST':
+        form = forms.UploadSubmissionForm(request.POST, request.FILES)
+        params['form'] = form
+
+        if form.is_valid():
+            id_number = get_id()
+            submission = Submission(
+                id=id_number,
+                team=team,
+                package=request.FILES['file']
+            )
+            submission.save()
+            #return HttpResponseRedirect('/success/url/')
+
+            print dir(submission.package)
+            print submission.package.path
+            print submission.package.url
+            
+            error = utils.unzip(submission.package.path)
+            if error:
+                params['error'] = error
+                return render_submit(request, params)
+
+            return my_results(request, message='Your code has been sent!')
+
+    return render_submit(request, params)
+
+
+def xsubmit(request):
+    team = get_team(request.user)
+    submission_end = time.localtime() > SUBMISSION_DEADLINE
+
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            instance = ModelWithFileField(file_field=request.FILES['file'])
+            instance.save()
+            handle_uploaded_file(request.FILES['file'])
+            #return HttpResponseRedirect('/success/url/')
+            return my_results(request, message='Your code has been sent!')
+    else:
+        form = UploadFileForm()
+    #return render(request, 'upload.html', {'form': form})
+    return render(
+        request,
+        'submission/submit.html',
+        {'submission_end': submission_end, 'team': team, 'form': form}
+    )
+
+
+def handle_uploaded_file(f):
+    with open('some/file/name.txt', 'wb+') as destination:
+        for chunk in f.chunks():
+            destination.write(chunk)
+
+
+def old_submit(request):
     if not request.user.is_authenticated():
         return index(request)
 
@@ -91,7 +166,7 @@ def submit(request):
 
         with open(filename, 'w') as src:
             src.write(code)
-        
+
         print id_number, 'filename', filename
         cmd = [
             'python2.7', base_dir + '/../bin/simulator/main.py', '-c', '-r',
@@ -109,14 +184,14 @@ def submit(request):
         lines = stdout.splitlines()
         result = lines[-1]
         print id_number, 'result', result
-        
+
         db_result = Result()
         db_result.id = id_number
         db_result.report = result
         db_result.log = stdout + stderr
         print id_number, 'log', db_result.log
         db_result.save()
-        
+
         return my_results(request, message='Your code has been sent!')
 
     submission_end = time.localtime() > SUBMISSION_DEADLINE

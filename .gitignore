@@ -2,6 +2,8 @@
 *.pyc
 *.sqlite3
 *.swp
+*.vim
 
 static/admin
 src/
+media

@@ -33,6 +33,11 @@ If you are a member of a team, please login <a href="./login">here</a>.
         {{ message }}
     </div>
 {% endif %}
+{% if error %}
+    <div class="error">
+        {{ error }}
+    </div>
+{% endif %}
 
 {% block body %} {% endblock %}
 </body>

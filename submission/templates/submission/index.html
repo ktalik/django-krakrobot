@@ -1,4 +1,6 @@
 {% extends 'submission/base.html' %}
+{% load static %}
+
 {% block body %}
 
 
@@ -19,6 +21,6 @@
         Also memory testing is only approximate. <b>Good luck!</b>
         </div>
 
-        <center><img src="http://www.krakrobot.pl/wp-content/themes/twentythirteen/img/logo.png"></center>
+        <center><img src="{% static "images/krakrobot-logo.png" %}"></center>
 
 {% endblock %}

@@ -10,81 +10,63 @@
         {% include 'submission/messages/no_team.html' %}
 </div>
     {% else %}
-    <!--
-	<form enctype="multipart/form-data" action="/submit" method="post">
-		source code file:
-		<input type="submit" value="Send" />
-	</form>
-    -->
-    <input id="file" type="file" multiple onchange="startRead()">
-    <form action="./submit" method="post">
-        {% csrf_token %}
-        <h6>We are sorry, but UTF-8 characters are not supported. Please submit source coded in ASCII!</h6>
-        <input type="submit" value="Send code" />
-        <h2>Code preview:</h2>
-        <textarea style="font-size:11pt;font-family:Monospace,Courier;" id="output" cols="90" rows="24" name="source_code" value="" >
-        </textarea><br/>
-    </form>
 
-<script>
-function startRead()
-{
-  // obtain input element through DOM 
-  
-  var file = document.getElementById('file').files[0];
-  if(file)
-	{
-    getAsText(file);
-  }
-}
+    <div class="article">
+        <form action="/submit" method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            <table>
 
-function getAsText(readFile)
-{
-	var reader;
-	try
-	{
-    reader = new FileReader();
-	}catch(e)
-	{
-		document.getElementById('output').innerHTML = 
-			"Error: seems File API is not supported on your browser";
-	  return;
-  }
-  
-  // Read file into memory as UTF-8      
-  reader.readAsText(readFile, "UTF-8");
-  
-  // Handle progress, success, and errors
-  reader.onprogress = updateProgress;
-  reader.onload = loaded;
-  reader.onerror = errorHandler;
-}
+            {% if form.non_field_errors %}
+            <tr class="warning">
+                <td>
+                        {{ form.non_field_errors }}
+                </td>
+            </tr>
+            {% endif %}
 
-function updateProgress(evt)
-{
-  if (evt.lengthComputable)
-	{
-    // evt.loaded and evt.total are ProgressEvent properties
-    var loaded = (evt.loaded / evt.total);
-  }
-}
+            {% if form.file.errors %}
+            <tr class="warning">
+                <td>
+                        {{ form.file.errors }}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>
+                    Paczka: {{ form.file }}
+                </td>
+                <td>
+                    Podaj paczkę zip ze swoim rozwiązaniem.</br>
+                    Dopuszczalne formaty: <code>.jar, .tar, .tar.gz, .zip</code>
+                </td>
+            </tr>
 
-function loaded(evt)
-{
-  // Obtain the read file data    
-  var fileString = evt.target.result;
-  document.getElementById('output').value = fileString;
-}
+            {% if form.command.errors %}
+            <tr class="warning">
+                <td>
+                        {{ form.command.errors }}
+                </td>
+            </tr>
+            {% endif %}
+            <tr>
+                <td>
+                Komenda  {{ form.command }}
+                </td>
+                <td>
+                    Podaj komendę, przekazywaną do parametru <code>--robot</code> symulatora
+                </td>
+            </tr>
 
-function errorHandler(evt)
-{
-  if(evt.target.error.code == evt.target.error.NOT_READABLE_ERR)
-	{
-    // The file could not be read
-		document.getElementById('output').value = "Error reading file..."
-  }
-}
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <input type="submit" value="Wyślij" />
+                </td>
+            </tr>
+            </table>
+        </form>
+    </div>
 
-</script>
-        {% endif %}
+    {% endif %}
 {% endblock %}
