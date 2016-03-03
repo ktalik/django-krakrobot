@@ -21,7 +21,7 @@ Submission on {{ submission.date }}:
 {{ submission.id }}
         </p>
 
-        {% if "processing" in submission.results.0 %}
+        {% if submission.status == "processing" %}
             <div class="test">
 Processing...
             </div>
@@ -73,24 +73,12 @@ Submission error.
                     <tr>
                     <td class="title"><b>Picture:</b></td>
                     <td>
-                    <table background="{{result.svg}}">
+                    <table class="board" background="{{result.svg}}">
                 {% for row in result.picture %}
                     <tr>
                     {% for col in row %}
 
                         <td
-                        {% if col.wall %}
-                            style="background-color: darkred;"
-                        {% else %}
-                            style=
-                            "
-                            background-color: rgba(
-                                {{col.color.0}},
-                                {{col.color.1}},
-                                {{col.color.2}},
-                                0.75);
-                            "
-                        {% endif %}
                             height="52"
                             width="32"
                         >

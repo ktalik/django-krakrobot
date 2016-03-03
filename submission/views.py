@@ -9,6 +9,7 @@ import subprocess
 import uuid
 
 from django.shortcuts import render_to_response, redirect
+from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.shortcuts import render
 from django.template import RequestContext
@@ -55,7 +56,7 @@ def get_team(user):
 
 
 def get_submissions(team):
-    return Submission.objects.filter(team__exact=team)
+    return Submission.objects.filter(team__exact=team).order_by('-date')
 
 
 def get_results(id_number):
@@ -115,7 +116,7 @@ def execute_tester(submission):
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
-    map_path = os.path.join(base_dir, '../media/maps/1.map')
+    map_path = os.path.join(base_dir, '../static/maps/1.map')
     
     os.chdir(s_path)
     cmd = [
@@ -162,15 +163,86 @@ def my_results(request, message=''):
     submissions = get_submissions(team)
 
     for submission in submissions:
-        submission_json = {
+        submission_dict = {
             'status': 'processing'
         }
 
         results = get_results(submission.id)
+        results_descriptions = []
         if results:
-            submission_json['status'] = 'finished'
+            results_dicts = describe_results(results)
+
+        submission_dict.update({
+            "id": submission.id,
+            "results": results_dicts,
+            "date": submission.date
+        })
+
+        if results:
+            submission_dict['status'] = 'finished'
+
+        response_params['submissions'].append(submission_dict)
 
     return render(request, 'submission/my_results.html', response_params)
+
+
+def describe_results(results):
+    ''' Generate a descriptive dict with results details from a Result model '''
+    if not results:
+        return []
+
+    results_dicts = []
+    for result in results:
+        result_string = '{}'
+        if len(results) == 0:
+            d = STATUS_PROCESSING
+        else:
+            in_db = True
+            result_string = result.report
+            if not result_string:
+                d = '{"error": "No result"}'
+                break
+            d = json.loads(result_string)
+            d['log'] = result.log.splitlines()
+
+            d['picture'] = []
+
+            map_json = json.load(open(d.get('map', {}).get('file_name', '')))
+
+            d['svg'] = os.path.join(
+                settings.STATIC_URL,
+                'maps',
+                map_json.get('vector_graphics_file', '')
+            )
+            
+            for r in d.get('map', {}).get('board', []):
+                row = []
+                for c in r:
+                    # FIXME: white is [0, 0, 0]
+                    col = {'color': c}
+                    row.append(col)
+                d['picture'].append(row)
+
+            """
+            for num, beep in enumerate(d['map']['beeps']):
+                d['picture'][beep[0]][beep[1]]['beep'] = str(num)
+            """
+
+            for r, row in enumerate(d.get('map', {}).get('board', {})):
+                for c, col in enumerate(row):
+                    if col == 1:
+                        d['picture'][r][c]['wall'] = True
+                    elif col == 3:
+                        d['picture'][r][c]['start'] = True
+
+            d['test_name'] = d.get(
+                'map', {}
+            ).get('file_name', 'No name').split('/')[-1]
+
+            results_dicts.append(d)
+
+    return results_dicts
+
 
 
 def old_my_results(request, message=''):

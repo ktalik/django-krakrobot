@@ -109,6 +109,11 @@ table {
     font-size: 14px;
 }
 
+table.board {
+    background-size: contain;
+    padding: 0;
+}
+
 table td.title {
     width: 400px;
     overflow: hidden;
