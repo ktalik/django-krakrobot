@@ -21,24 +21,9 @@ from models import Submission, Team, Result
 
 SUBMISSION_DEADLINE = time.struct_time([2016, 5, 10, 0, 0, 0, 0, 0, 0])
 
-STATUS_PROCESSING = {"processing": "processing"}
-
 
 def get_id():
     return uuid.uuid4()
-
-def submit_code(a_code, a_team):
-    """
-    Save code submission and return id
-    """
-    id_number = get_id()
-    submission = Submission(
-        id=id_number,
-        team=a_team,
-        code=a_code,
-    )
-    submission.save()
-    return id_number
 
 
 def fetch_status(id_number):
@@ -129,10 +114,15 @@ def execute_tester(submission):
     s_cmd = submission.command
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
+
+    map_path = os.path.join(base_dir, '../media/maps/1.map')
     
     os.chdir(s_path)
     cmd = [
-        'python2.7', base_dir + '/../bin/simulator/main.py', '-c', '-r', s_cmd]
+        'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
+        '-m', map_path,
+        '-r', s_cmd
+    ]
     proc = subprocess.Popen(
         cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     stdout, stderr = proc.communicate()
@@ -150,11 +140,40 @@ def execute_tester(submission):
     print s_id, 'report', db_result.report
     db_result.log = stdout + stderr
     db_result.save()
+    print '\n\nResult saved.\n\n'
 
     return result
 
 
 def my_results(request, message=''):
+    if not request.user.is_authenticated():
+        return index(request)
+    
+    response_params = {
+        'submissions': [],
+        'message': message,
+        'team': None
+    }
+
+    team = get_team(request.user)
+    if team:
+        response_params['team'] = team
+
+    submissions = get_submissions(team)
+
+    for submission in submissions:
+        submission_json = {
+            'status': 'processing'
+        }
+
+        results = get_results(submission.id)
+        if results:
+            submission_json['status'] = 'finished'
+
+    return render(request, 'submission/my_results.html', response_params)
+
+
+def old_my_results(request, message=''):
     if not request.user.is_authenticated():
         return index(request)
 
@@ -172,33 +191,36 @@ def my_results(request, message=''):
         else:
             in_db = True
             result_string = results[0].report
+            if not result_string:
+                d = '{"error": "No result"}'
+                break
             d = json.loads(result_string)
             d['log'] = results[0].log.splitlines()
 
-            """
             d['picture'] = []
-            for r in d['map']['color_board']:
+            d['svg'] = d.get('map', {}).get('vector_graphics_file', {})
+            
+            for r in d.get('map', {}).get('board', []):
                 row = []
                 for c in r:
                     # FIXME: white is [0, 0, 0]
-                    if c == [0, 0, 0]:
-                        c = [255, 255, 255]
                     col = {'color': c}
                     row.append(col)
                 d['picture'].append(row)
 
+            """
             for num, beep in enumerate(d['map']['beeps']):
                 d['picture'][beep[0]][beep[1]]['beep'] = str(num)
+            """
 
-            for r, row in enumerate(d['map']['board']):
+            for r, row in enumerate(d.get('map', {}).get('board', {})):
                 for c, col in enumerate(row):
                     if col == 1:
                         d['picture'][r][c]['wall'] = True
                     elif col == 3:
                         d['picture'][r][c]['start'] = True
-            """
 
-            d['test_name'] = d['map']['file_name'].split('/')[-1]
+            d['test_name'] = d.get('map', {}).get('file_name', 'No name').split('/')[-1]
 
         params["submissions"].append({
             "id": submission.id,
