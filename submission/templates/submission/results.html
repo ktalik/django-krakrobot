@@ -2,12 +2,12 @@
 {% block body %}
 
 <div class="results">
-<h2>Team results</h2>
+<h2>Wyniki drużyn</h2>
 <table style="width:500px">
 {% for team in teams %}
 
     <tr>
-    <td><p class="submission"> Team: {{ team.name }} </p></td>
+    <td><p class="submission"> Drużyna: {{ team.name }} </p></td>
     <td>
     {% if team.passed %}
         <p style="background-color:lightgreen;">
@@ -18,7 +18,7 @@
         {% if submission_ended %}
             Not passed...
         {% else %}
-            Still trying...
+            Przetwarzanie...
         {% endif %}
         </p>
     {% endif %}
