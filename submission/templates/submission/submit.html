@@ -3,7 +3,7 @@
 	{{ state }}
     {% if submission_end %}
 <div class="article">
-    <p>Submission time has passed... Thank you!</p>
+    <p>Termin nadsyłania rozwiązań minął... Dziękujemy za wszystkie zgłoszenia!</p>
 </div>
     {% elif not team %}
 <div class="warning">
@@ -19,9 +19,9 @@
     <input id="file" type="file" multiple onchange="startRead()">
     <form action="./submit" method="post">
         {% csrf_token %}
-        <h6>We are sorry, but UTF-8 characters are not supported. Please submit source coded in ASCII!</h6>
+        <h6>Przepraszamy, ale kodowanie UTF-8 nie jest obecnie wspierane. Prosimy o przesyłanie kodów źródłowych w kodowaniu ASCII!</h6>
         <input type="submit" value="Send code" />
-        <h2>Code preview:</h2>
+        <h2>Podgląd kodu źródłowego:</h2>
         <textarea style="font-size:11pt;font-family:Monospace,Courier;" id="output" cols="90" rows="24" name="source_code" value="" >
         </textarea><br/>
     </form>
@@ -29,8 +29,8 @@
 <script>
 function startRead()
 {
-  // obtain input element through DOM 
-  
+  // obtain input element through DOM
+
   var file = document.getElementById('file').files[0];
   if(file)
 	{
@@ -46,14 +46,14 @@ function getAsText(readFile)
     reader = new FileReader();
 	}catch(e)
 	{
-		document.getElementById('output').innerHTML = 
-			"Error: seems File API is not supported on your browser";
+		document.getElementById('output').innerHTML =
+			"Błąd: zdaje się, że File API nie jest wspierane przez twoją przeglądarkę";
 	  return;
   }
-  
-  // Read file into memory as UTF-8      
+
+  // Read file into memory as UTF-8
   reader.readAsText(readFile, "UTF-8");
-  
+
   // Handle progress, success, and errors
   reader.onprogress = updateProgress;
   reader.onload = loaded;
@@ -71,7 +71,7 @@ function updateProgress(evt)
 
 function loaded(evt)
 {
-  // Obtain the read file data    
+  // Obtain the read file data
   var fileString = evt.target.result;
   document.getElementById('output').value = fileString;
 }

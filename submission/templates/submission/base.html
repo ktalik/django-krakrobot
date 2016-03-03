@@ -12,20 +12,20 @@ Welcome to {{ meta.title }}!<br>
     </div>
     <div class="welcome">
 {% if user.is_authenticated %}
-Hello, {{ user.username }}!<br>
+Witaj, {{ user.username }}!<br>
 {% else %}
-Hello, guest!
-If you are a member of a team, please login <a href="./login">here</a>.
+Witaj, gościu!
+Jeżeli jesteś członkiem drużyny, zaloguj się <a href="./login">tutaj</a>.
 {% endif %}
     </div>
     <nav class="menubar mainmenu">
         <a class="item" href="http://www.krakrobot.pl/" target="_blank">krakrobot.pl</a>
-        <a class="item" href="./">home</a>
-        <a class="item" href="./results">results</a>
+        <a class="item" href="./">Strona domowa</a>
+        <a class="item" href="./results">Wszystkie wyniki</a>
 {% if user.is_authenticated %}
-        <a class="item" href="./submit">submit</a>
-        <a class="item" href="./my_results">my team results</a>
-        <a class="item" href="./logout">logout</a>
+        <a class="item" href="./submit">Prześlij kod</a>
+        <a class="item" href="./my_results">Moje wyniki</a>
+        <a class="item" href="./logout">Wyloguj</a>
 {% endif %}
     </nav>
 {% if message %}

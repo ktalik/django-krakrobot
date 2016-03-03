@@ -16,24 +16,24 @@
 
         <p class="submission">
 <i id="date">
-Submission on {{ submission.date }}:
+Przesłano w dniu {{ submission.date }}:
 </i>
 {{ submission.id }}
         </p>
 
         {% if "processing" in submission.results.0 %}
             <div class="test">
-Processing...
+Przetwarzanie...
             </div>
 
         {% elif "timed_out" in submission.results.0 %}
             <div class="warning">
-Simulator API is down. Sorry.
+API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych problemów, prosimy o kontakt.
             </div>
 
         {% elif "error" in submission.results.0 and submission.results.0.error %}
             <div class="test">
-Submission error.
+Błąd wysyłania. Spróbuj ponownie za chwilę. W razie dalszych problemów, prosimy o kontakt.
             </div>
 
         {% else %}
@@ -56,22 +56,22 @@ Submission error.
                     </tr>
 
                     <tr>
-                    <td class="title"><b>Error:</b></td>
+                    <td class="title"><b>Błąd:</b></td>
                     <td>{{ result.error }}</td>
                     </tr>
 
                     <tr>
-                    <td class="title"><b>Simulation time:</b></td>
+                    <td class="title"><b>Czas symulacji:</b></td>
                     <td>{{ result.sim_time }}</td>
                     </tr>
 
                     <tr>
-                    <td class="title"><b>CPU time:</b></td>
+                    <td class="title"><b>Czas obliczeń:</b></td>
                     <td>{{ result.cpu_time }}</td>
                     </tr>
 
                     <tr>
-                    <td class="title"><b>Picture:</b></td>
+                    <td class="title"><b>Wizualizacja:</b></td>
                     <td>
                     <table>
                 {% for row in result.picture %}
@@ -116,16 +116,16 @@ Submission error.
                     </tr>
 
                     <tr>
-                    <td class="title"><b>Picture meaning:</b></td>
+                    <td class="title"><b>Objaśnienie:</b></td>
                     <td>
 <b>
 &#x2691;S
 </b>
-- starting point <br>
+- punkt początkowy <br>
 <b style="color:darkred;">
 &#x26A1;X
 </b>
-- beep number X<br>
+- piknięcie nr X<br>
                     </td>
                     </tr>
 
