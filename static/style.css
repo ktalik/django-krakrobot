@@ -1,8 +1,18 @@
 
+/*
+ * Download font face, so that it looks the same for every user
+ */
+
+@font-face {
+    font-family: "Django Subeval";
+    src: url("/static/fonts/FreeSans.woff") format("woff"),
+         url("/static/fonts/FreeSans.ttf") format("truetype");
+}
+
 * {
     margin: 0px;
     padding: 10px;
-    font-family: "Droid Serif", sans-serif;
+    font-family: "Django Subeval", sans-serif;
     text-decoration: none;
 }
 

@@ -7,18 +7,22 @@
 {% for team in teams %}
 
     <tr>
-    <td><p class="submission"> Drużyna: {{ team.name }} </p></td>
+        <th>Drużyna</th>
+        <th>Wynik zadania wstępnego</th>
+    </tr>
+    <tr>
+    <td><p class="submission">{{ team.name }} </p></td>
     <td>
     {% if team.passed %}
         <p style="background-color:lightgreen;">
-        Passed!
+        Drużyna zaliczyła zdanie!
         </p>
     {% else %}
         <p>
         {% if submission_ended %}
-            Not passed...
+            Drużyna nie zaliczyła zadania
         {% else %}
-            Przetwarzanie...
+            Drużyna wciąż próbuje
         {% endif %}
         </p>
     {% endif %}

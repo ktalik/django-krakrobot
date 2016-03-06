@@ -15,15 +15,21 @@
     {% for submission in submissions %}
 
         <p class="submission">
-<i id="date">
-Przesłano w dniu {{ submission.date }}:
-</i>
-{{ submission.id }}
+
+            Rozwiązanie
+            <i id="date">
+            wysłane {{ submission.date }}
+            </i>
+            Numer identyfikacyjny:
+            <b class="code">
+            {{ submission.id }}
+            </b>
+
         </p>
 
         {% if submission.status == "processing" %}
             <div class="test">
-Przetwarzanie...
+Przetwarzanie... Twoje rozwiązanie jest właśnie testowane. Spróbuj ponownie za chwilę.
             </div>
 
         {% elif "timed_out" in submission.results.0 %}

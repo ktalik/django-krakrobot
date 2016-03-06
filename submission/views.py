@@ -5,6 +5,7 @@ import urllib2
 import json
 import os
 import time
+import stat
 import subprocess
 import uuid
 
@@ -21,6 +22,10 @@ import utils
 from models import Submission, Team, Result
 
 SUBMISSION_DEADLINE = time.struct_time([2016, 5, 10, 0, 0, 0, 0, 0, 0])
+
+RESULT_JSON_FILE_NAME = 'result.json'
+
+TEST_FILE_NAMES = ['1.map', '2.map']
 
 
 def get_id():
@@ -60,7 +65,7 @@ def get_submissions(team):
 
 
 def get_results(id_number):
-    return Result.objects.filter(id__exact=id_number)
+    return Result.objects.filter(submission_id__exact=id_number)
 
 
 def index(request, params={}):
@@ -99,10 +104,15 @@ def submit(request):
 
             error = utils.unzip(submission.package.path)
             if error:
+                submission.delete()
                 params['error'] = error
                 return render_submit(request, params)
 
-            execute_tester(submission)
+            try:
+                execute_tester(submission)
+            except Exception as error:
+                print u'ERROR: Błąd wewnętrzny testerki:', error
+                
 
             return my_results(
                 request, message=_(u'Rozwiązanie zostało wysłane.'))
@@ -116,34 +126,45 @@ def execute_tester(submission):
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
-    map_path = os.path.join(base_dir, '../static/maps/1.map')
-    
+    # Move to the submission directory
     os.chdir(s_path)
-    cmd = [
-        'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
-        '-m', map_path,
-        '-r', s_cmd
-    ]
-    proc = subprocess.Popen(
-        cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    stdout, stderr = proc.communicate()
 
-    # Log testing process here
-    print s_id, 'stderr', stderr
+    s_split = s_cmd.split()
+    if len(s_split) == 1:
+        # This is run.sh or run.py so add exec permissions
+        os.chmod(
+            os.path.join(s_path, s_split[0]),
+            stat.S_IEXEC | stat.S_IREAD
+        )
+    
+    for test in TEST_FILE_NAMES:
+        map_path = os.path.join( os.path.join(base_dir, '../static/maps'), test)
+        result_file_name = test + RESULT_JSON_FILE_NAME
 
-    # Log result
-    lines = stdout.splitlines()
-    result = lines[3:]
+        cmd = [
+            'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
+            '--map', map_path,
+            '--robot', s_cmd,
+            '--output', result_file_name
+        ]
+        proc = subprocess.Popen(
+            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        stdout, stderr = proc.communicate()
 
-    db_result = Result()
-    db_result.id = s_id
-    db_result.report = ''.join(result)
-    print s_id, 'report', db_result.report
-    db_result.log = stdout + stderr
-    db_result.save()
-    print '\n\nResult saved.\n\n'
+        # Log testing process here
+        print s_id, 'stderr', stderr
 
-    return result
+        # Log result
+        lines = stdout.splitlines()
+        result = json.load(open(os.path.join(s_path, result_file_name)))
+
+        db_result = Result()
+        db_result.submission_id = s_id
+        db_result.report = json.dumps(result)
+        print s_id, 'report', db_result.report
+        db_result.log = stdout + stderr
+        db_result.save()
+        print '\n\nResult saved.\n\n'
 
 
 def my_results(request, message=''):
@@ -169,6 +190,7 @@ def my_results(request, message=''):
 
         results = get_results(submission.id)
         results_descriptions = []
+        results_dicts = []
         if results:
             results_dicts = describe_results(results)
 
@@ -192,6 +214,7 @@ def describe_results(results):
         return []
 
     results_dicts = []
+    print '\n\n\nlen(results)', len(results)
     for result in results:
         result_string = '{}'
         if len(results) == 0:
@@ -223,10 +246,8 @@ def describe_results(results):
                     row.append(col)
                 d['picture'].append(row)
 
-            """
-            for num, beep in enumerate(d['map']['beeps']):
+            for num, beep in enumerate(d['beeps']):
                 d['picture'][beep[0]][beep[1]]['beep'] = str(num)
-            """
 
             for r, row in enumerate(d.get('map', {}).get('board', {})):
                 for c, col in enumerate(row):
@@ -241,89 +262,8 @@ def describe_results(results):
 
             results_dicts.append(d)
 
+    print '\n\nresults_dicts', results_dicts
     return results_dicts
-
-
-
-def old_my_results(request, message=''):
-    if not request.user.is_authenticated():
-        return index(request)
-
-    params = {'submissions': [], 'message': message, 'team': None}
-    team = get_team(request.user)
-    params['team'] = team
-    submissions = get_submissions(team)
-
-    for submission in submissions:
-        in_db = False
-        results = get_results(submission.id)
-        result_string = '{}'
-        if len(results) == 0:
-            d = STATUS_PROCESSING
-        else:
-            in_db = True
-            result_string = results[0].report
-            if not result_string:
-                d = '{"error": "No result"}'
-                break
-            d = json.loads(result_string)
-            d['log'] = results[0].log.splitlines()
-
-            d['picture'] = []
-            d['svg'] = d.get('map', {}).get('vector_graphics_file', {})
-            
-            for r in d.get('map', {}).get('board', []):
-                row = []
-                for c in r:
-                    # FIXME: white is [0, 0, 0]
-                    col = {'color': c}
-                    row.append(col)
-                d['picture'].append(row)
-
-            """
-            for num, beep in enumerate(d['map']['beeps']):
-                d['picture'][beep[0]][beep[1]]['beep'] = str(num)
-            """
-
-            for r, row in enumerate(d.get('map', {}).get('board', {})):
-                for c, col in enumerate(row):
-                    if col == 1:
-                        d['picture'][r][c]['wall'] = True
-                    elif col == 3:
-                        d['picture'][r][c]['start'] = True
-
-            d['test_name'] = d.get('map', {}).get('file_name', 'No name').split('/')[-1]
-
-        params["submissions"].append({
-            "id": submission.id,
-            "results": [d],
-            "date": submission.date
-        })
-
-        passed = False
-        if not ('processing' in d or 'error' in d or 'timed_out' in d):
-            if not in_db:
-                result_in_db = Result()
-                result_in_db.id = submission.id
-                result_in_db.report = str(result_string)
-                result_in_db.save()
-            passed = True
-            print d['results']
-            for result in d['results']:
-                if result == 'error' \
-                        or result.get('error', False):
-                    passed = False
-                    continue
-                if not result.get('goal_achieved', False):
-                    passed = False
-                    continue
-        if passed:
-            team.passed = True
-            team.save()
-
-    params["submissions"].reverse()
-
-    return render(request, 'submission/my_results.html', params)
 
 
 def results(request):

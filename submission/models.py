@@ -92,6 +92,7 @@ class Submission(models.Model):
 
 class Result(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    submission_id = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
     report = models.CharField(max_length=1000, default='{}')
     log = models.CharField(max_length=10000, default='')
 
