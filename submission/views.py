@@ -136,9 +136,8 @@ def execute_tester(submission):
         )
     
     for test in TEST_FILE_NAMES:
-        map_path = os.path.join(settings.STATIC_URL, 'maps', test)
-        result_file_name = os.path.join(
-            settings.STATIC_URL, test + '_' + RESULT_JSON_FILE_NAME)
+        map_path = os.path.join( os.path.join(base_dir, '../static/maps'), test)
+        result_file_name = map_path + '_' + RESULT_JSON_FILE_NAME
 
         cmd = [
             'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
