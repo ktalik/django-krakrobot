@@ -111,7 +111,7 @@ def submit(request):
             try:
                 execute_tester(submission)
             except Exception as error:
-                print u'ERROR: Błąd wewnętrzny testerki:', error
+                print u'ERROR: Blad wewnetrzny testerki:', error
                 
 
             return my_results(
@@ -288,7 +288,7 @@ def logout_user(request):
 
 
 def login_user(request):
-    state = "Please log in."
+    state = _('Zaloguj się.')
     username = password = ''
     if request.POST:
         username = request.POST.get('username')
