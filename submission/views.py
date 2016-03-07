@@ -141,6 +141,9 @@ def execute_tester(submission):
         result_file_name = os.path.join(
             s_path, test + '_' + RESULT_JSON_FILE_NAME)
 
+        if not os.path.exists(result_file_name):
+            open(result_file_name, 'w').close() 
+
         cmd = [
             'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
             '--map', map_path,
