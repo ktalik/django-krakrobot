@@ -93,9 +93,7 @@ def submit(request):
         params['form'] = form
 
         if form.is_valid():
-            id_number = get_id()
             submission = Submission(
-                id=id_number,
                 team=team,
                 package=request.FILES['file'],
                 command=request.POST['command'],
@@ -138,8 +136,13 @@ def execute_tester(submission):
         )
     
     for test in TEST_FILE_NAMES:
-        map_path = os.path.join( os.path.join(base_dir, '../static/maps'), test)
-        result_file_name = test + RESULT_JSON_FILE_NAME
+        map_path = os.path.join(
+            base_dir, '../static/maps', test)
+        result_file_name = os.path.join(
+            s_path, test + '_' + RESULT_JSON_FILE_NAME)
+
+        if not os.path.exists(result_file_name):
+            open(result_file_name, 'w').close() 
 
         cmd = [
             'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
@@ -156,7 +159,7 @@ def execute_tester(submission):
 
         # Log result
         lines = stdout.splitlines()
-        result = json.load(open(os.path.join(s_path, result_file_name)))
+        result = json.load(open(result_file_name))
 
         db_result = Result()
         db_result.submission_id = s_id
