@@ -96,7 +96,6 @@ def submit(request):
             submission = Submission(
                 team=team,
                 package=request.FILES['file'],
-                command=request.POST['command'],
             )
             submission.save()
 
@@ -109,8 +108,13 @@ def submit(request):
             try:
                 execute_tester(submission)
             except Exception as error:
-                print u'ERROR: Blad wewnetrzny testerki:', error
-                
+                report = 'Blad wewnetrzny testerki: ' + str(error)
+                print 'ERROR:', report
+                db_result = Result()
+                db_result.submission_id = submission.id
+                db_result.report = json.dumps({'error': report})
+                db_result.log = ''
+                db_result.save()
 
             return my_results(
                 request, message=_(u'Rozwiązanie zostało wysłane.'))
@@ -120,20 +124,32 @@ def submit(request):
 
 def execute_tester(submission):
     base_dir = os.path.dirname(__file__)
-    s_cmd = submission.command
+    #s_cmd = submission.command
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
     # Move to the submission directory
     os.chdir(s_path)
 
-    s_split = s_cmd.split()
-    if len(s_split) == 1:
-        # This is run.sh or run.py so add exec permissions
-        os.chmod(
-            os.path.join(s_path, s_split[0]),
-            stat.S_IEXEC | stat.S_IREAD
-        )
+    s_cmd = './run.sh'
+    if not os.path.exists(s_cmd):
+        s_cmd = './run.py'
+        if not os.path.exists(s_cmd):
+            db_result = Result()
+            db_result.submission_id = s_id
+            db_result.report = json.dumps(
+                {'error': 'Brakuje `run.sh` lub `run.py`!'})
+            db_result.log = ''
+            db_result.save()
+            return
+
+    submission.command = s_cmd
+    submission.save()
+
+    os.chmod(
+        os.path.join(s_path, s_cmd),
+        stat.S_IEXEC | stat.S_IREAD
+    )
     
     for test in TEST_FILE_NAMES:
         map_path = os.path.join(
@@ -217,7 +233,6 @@ def describe_results(results):
         return []
 
     results_dicts = []
-    print '\n\n\nlen(results)', len(results)
     for result in results:
         result_string = '{}'
         if len(results) == 0:
@@ -225,10 +240,17 @@ def describe_results(results):
         else:
             in_db = True
             result_string = result.report
+
             if not result_string:
-                d = '{"error": "No result"}'
+                d = {"error": "No result"}
+                results_dicts.append(d)
                 break
+
             d = json.loads(result_string)
+            if 'error' in d and d['error']:
+                results_dicts.append(d)
+                break
+
             d['log'] = result.log.splitlines()
 
             d['picture'] = []
@@ -265,7 +287,6 @@ def describe_results(results):
 
             results_dicts.append(d)
 
-    print '\n\nresults_dicts', results_dicts
     return results_dicts
 
 

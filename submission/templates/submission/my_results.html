@@ -37,14 +37,22 @@ Przetwarzanie... Twoje rozwiązanie jest właśnie testowane. Spróbuj ponownie 
 API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych problemów, prosimy o kontakt.
             </div>
 
-        {% elif "error" in submission.results.0 and submission.results.0.error %}
-            <div class="test">
-Błąd wysyłania. Spróbuj ponownie za chwilę. W razie dalszych problemów, prosimy o kontakt.
+        {% elif "error" in submission and submission.error %}
+            <div class="warning">
+            {{ submission.error }}
             </div>
 
         {% else %}
 
             {% for result in submission.results %}
+
+                {% if "error" in result and result.error %}
+
+                    <div class="testerror">
+                    {{ result.error }}
+                    </div>
+
+                {% else %}
 
                 <div class="test">
 
@@ -139,6 +147,7 @@ Błąd wysyłania. Spróbuj ponownie za chwilę. W razie dalszych problemów, pr
 
                 </div>
             </div>
+            {% endif %}
             {% endfor %}
         {% endif %}
 

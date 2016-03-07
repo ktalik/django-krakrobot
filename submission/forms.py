@@ -54,6 +54,4 @@ class UploadSubmissionForm(forms.Form):
         content_types=['application/zip'],
         max_upload_size=1310720,
     )
-    command = forms.CharField(max_length=1000)
-
 

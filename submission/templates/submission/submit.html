@@ -36,8 +36,16 @@
                     Paczka: {{ form.file }}
                 </td>
                 <td>
-                    Podaj paczkę zip ze swoim rozwiązaniem.</br>
+                    Podaj paczkę ze swoim rozwiązaniem.</br>
                     Dopuszczalne formaty: <code>.jar, .tar, .tar.gz, .zip</code>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    Paczka powinna zawierać plik <code>run.sh</code> lub
+                    <code>run.py</code> (patrz readme symulatora).
                 </td>
             </tr>
 
@@ -48,18 +56,8 @@
                 </td>
             </tr>
             {% endif %}
-            <tr>
-                <td>
-                Komenda  {{ form.command }}
-                </td>
-                <td>
-                    Podaj komendę, przekazywaną do parametru <code>--robot</code> symulatora
-                </td>
-            </tr>
 
             <tr>
-                <td>
-                </td>
                 <td>
                     <input type="submit" value="Wyślij" />
                 </td>
