@@ -11,9 +11,12 @@ https://docs.djangoproject.com/en/1.8/ref/settings/
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 import os
 DJ_PROJECT_DIR = os.path.dirname(__file__)
-BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
-WSGI_DIR = os.path.dirname(BASE_DIR)
-REPO_DIR = os.path.dirname(WSGI_DIR)
+#BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
+BASE_DIR = '/home/krakrobot/repo/wsgi/django-subeval'
+#WSGI_DIR = os.path.dirname(BASE_DIR)
+WSGI_DIR = '/home/krakrobot/repo/wsgi'
+#REPO_DIR = os.path.dirname(WSGI_DIR)
+REPO_DIR = '/home/krakrobot/repo'
 DATA_DIR = os.environ.get('OPENSHIFT_DATA_DIR', BASE_DIR)
 
 import sys
@@ -68,7 +71,7 @@ ROOT_URLCONF = 'submission.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['/home/krakrobot/repo/wsgi/django-subeval/submission/templates'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,7 +79,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
-                'submission.context_processors.meta_data',
+                #'context_processors.meta_data',
             ],
         },
     },
@@ -114,7 +117,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/1.8/howto/static-files/
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(WSGI_DIR, 'static')
+STATIC_ROOT = '/home/krakrobot/repo/wsgi/django-subeval/static'
 
 # A sample logging configuration. The only tangible logging
 # performed by this configuration is to send an email to
