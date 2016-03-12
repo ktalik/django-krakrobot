@@ -60,6 +60,7 @@ class Team(models.Model):
     name = models.CharField(max_length=DB_NAME_LENGTH)
     user = models.ForeignKey(User)
     passed = models.BooleanField()
+    avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
 
     def __unicode__(self):
         return self.name
@@ -73,6 +74,7 @@ def submission_directory_path(instance, filename):
 class Submission(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     team = models.ForeignKey(Team)
+    user = models.ForeignKey(User)
     date = models.DateTimeField(default=timezone.now)
     #package = models.FileField(upload_to=submission_directory_path)
     package = ContentTypeRestrictedFileField(

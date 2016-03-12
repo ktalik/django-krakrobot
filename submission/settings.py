@@ -13,6 +13,7 @@ import os
 DJ_PROJECT_DIR = os.path.dirname(__file__)
 #BASE_DIR = os.path.dirname(DJ_PROJECT_DIR)
 BASE_DIR = '/home/krakrobot/repo/wsgi/django-subeval'
+BIN_DIR = '/home/krakrobot/repo/wsgi/django-subeval/bin'
 #WSGI_DIR = os.path.dirname(BASE_DIR)
 WSGI_DIR = '/home/krakrobot/repo/wsgi'
 #REPO_DIR = os.path.dirname(WSGI_DIR)

@@ -1,18 +1,37 @@
 {% extends 'submission/base.html' %}
 {% block body %}
-	{{ state }}
-	<br/>
 	{{ message }}
-	<form action="./login" method="post">
-    {% csrf_token %}
-		{% if next %}
-		<input type="hidden" name="next" value="{{ next }}" />
-		{% endif %}
-		login:
-		<input type="text" name="username" value="{{ username}}" /><br />
-		hasło:
-		<input type="password" name="password" value="" /><br />
-
-		<input type="submit" value="Log In" />
-	</form>
+    <div class="article">
+        <form action="./login" method="post">
+        {% csrf_token %}
+        <table>
+            <tr>
+                <td>
+            {% if next %}
+                    <input type="hidden" name="next" value="{{ next }}" />
+            {% endif %}
+                    login:
+                </td>
+                <td>
+                    <input type="text" name="username" value="{{ username}}" /><br />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    hasło:
+                </td>
+                <td>
+                    <input type="password" name="password" value="" /><br />
+                </td>
+            </tr>
+            <tr>
+                <td>
+                </td>
+                <td>
+                    <input type="submit" value="Log In" />
+                </td>
+            </tr>
+        </table>
+        </form>
+    </div>
 {% endblock %}
