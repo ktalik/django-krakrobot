@@ -4,15 +4,29 @@
 <div class="results">
 <h2>Wyniki drużyn</h2>
 <table style="width:500px">
-{% for team in teams %}
 
     <tr>
         <th>Drużyna</th>
         <th>Wynik zadania wstępnego</th>
     </tr>
+
+{% for team in teams %}
+
     <tr>
-    <td><p class="submission">{{ team.name }} </p></td>
+
     <td>
+    <p class="team">
+        {% if team.avatar %}
+        <a href="{{ team.avatar.url }}">
+            <img src="{{ team.avatar.url }}" class="avatar"/>
+        </a>
+        {% endif %}
+    <br/>
+    {{ team.name }}
+    </p>
+    </td>
+
+    <td class="teamresult">
     {% if team.passed %}
         <p style="background-color:lightgreen;">
         Drużyna zaliczyła zdanie!

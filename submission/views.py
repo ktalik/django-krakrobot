@@ -96,6 +96,7 @@ def submit(request):
             submission = Submission(
                 team=team,
                 package=request.FILES['file'],
+                user=request.user,
             )
             submission.save()
 
@@ -123,8 +124,6 @@ def submit(request):
 
 
 def execute_tester(submission):
-    base_dir = os.path.dirname(__file__)
-    #s_cmd = submission.command
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
@@ -153,7 +152,7 @@ def execute_tester(submission):
     
     for test in TEST_FILE_NAMES:
         map_path = os.path.join(
-            base_dir, '../static/maps', test)
+            settings.STATIC_ROOT, 'maps', test)
         result_file_name = os.path.join(
             s_path, test + '_' + RESULT_JSON_FILE_NAME)
 
@@ -161,7 +160,9 @@ def execute_tester(submission):
             open(result_file_name, 'w').close() 
 
         cmd = [
-            'python2.7', base_dir + '/../bin/simulator/main.py', '-c',
+            'python2.7',
+            os.path.join(settings.BIN_DIR, 'simulator/main.py'),
+            '-c',
             '--map', map_path,
             '--robot', s_cmd,
             '--output', result_file_name
@@ -204,7 +205,8 @@ def my_results(request, message=''):
 
     for submission in submissions:
         submission_dict = {
-            'status': 'processing'
+            'status': 'processing',
+            'user': submission.user.username
         }
 
         results = get_results(submission.id)
@@ -297,22 +299,22 @@ def results(request):
     for team in teams:
         passed = team.passed
         if team.name != 'TestTeam':
-            params["teams"].append({'name': team.name, 'passed': passed})
+            params["teams"].append(
+                {'name': team.name, 'passed': passed, 'avatar': team.avatar})
 
     params['submission_ended'] = time.localtime() > SUBMISSION_DEADLINE
     return render(request, 'submission/results.html', params)
 
 
 def logout_user(request):
-    params = {'message': 'You are not logged in.'}
+    params = {'message': _('Nie jesteś zalogowany(a).')}
     if request.user and request.user.is_authenticated:
         logout(request)
-        params = {'message': 'Logged out.'}
+        params = {'message': _(u'Wylogowano.')}
     return index(request, params)
 
 
 def login_user(request):
-    state = _('Zaloguj się.')
     username = password = ''
     if request.POST:
         username = request.POST.get('username')
@@ -324,14 +326,14 @@ def login_user(request):
                 login(request, user)
                 return redirect('./..')
             else:
-                message = "Account is not active. Please contact the site admin."
+                error = _(u'Konto nie jest aktywne. Zgłoś ten błąd do nas.')
         else:
-            message = "Username and/or password incorrect."
+            error = _(u'Nieprawidłowy login lub hasło!')
 
         return render_to_response(
             'submission/login.html',
             {
-                'message': message,
+                'error': error,
             },
             context_instance=RequestContext(request)
         )
@@ -339,7 +341,36 @@ def login_user(request):
     return render_to_response(
         'submission/login.html',
         {
-            'state': state,
+            'username': username
+        },
+        context_instance=RequestContext(request)
+    )
+
+
+def change_password(request):
+    if not request.user.is_authenticated():
+        return index(request)
+
+    user = request.user
+
+    if request.POST:
+        old_password = request.POST.get('old_password')
+        new_password = request.POST.get('new_password')
+        user = authenticate(username=user.username, password=old_password)
+
+        if user is not None:
+            user.set_password(new_password)
+            user.save()
+            params = {'message': _(u'Pomyślnie zmieniono hasło.')}
+            return index(request, params)
+
+        else:
+            params = {'error': _(u'Nieprawidłowe stare hasło.')}
+            return index(request, params)
+
+    return render_to_response(
+        'submission/change_password.html',
+        {
             'username': username
         },
         context_instance=RequestContext(request)

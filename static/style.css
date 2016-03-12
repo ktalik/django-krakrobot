@@ -96,17 +96,17 @@ div.headline {
     font-weight: bold;
 }
 
-*.submission {
+.submission {
     font-weight: bold;
     background: rgba(128, 128, 128, 0.50);
 }
 
-*.submission i {
+.submission i {
     font-weight: normal;
     font-size: 12px;
 }
 
-*.test {
+.test {
     font-size: 14px;
     background: rgba(128, 128, 128, 0.10);
 }
@@ -118,8 +118,24 @@ div.headline {
     font-weight: bold;
 }
 
-*.result {
+.result {
     padding: 5px;
+}
+
+.team {
+    font-weight: bold;
+    background: rgba(128, 128, 128, 0.50);
+    text-align: center;
+}
+
+.avatar {
+    max-width: 50px;
+    max-height: 50px;
+    background-size: cover;
+}
+
+.teamresult {
+    text-align: center;
 }
 
 table {
