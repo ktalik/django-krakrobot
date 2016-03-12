@@ -145,10 +145,9 @@ def execute_tester(submission):
     submission.command = s_cmd
     submission.save()
 
-    os.chmod(
-        os.path.join(s_path, s_cmd),
-        stat.S_IEXEC | stat.S_IREAD
-    )
+    s_cmd = os.path.join(s_path, s_cmd)
+
+    os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
     
     for test in TEST_FILE_NAMES:
         map_path = os.path.join(
