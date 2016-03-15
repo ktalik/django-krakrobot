@@ -273,7 +273,7 @@ def describe_results(results):
                 d['picture'].append(row)
 
             for num, beep in enumerate(d['beeps']):
-                d['picture'][beep[0]][beep[1]]['beep'] = str(num)
+                d['picture'][int(beep[0])][int(beep[1])]['beep'] = str(num)
 
             for r, row in enumerate(d.get('map', {}).get('board', {})):
                 for c, col in enumerate(row):
