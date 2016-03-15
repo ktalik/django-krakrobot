@@ -63,15 +63,31 @@ API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych probl
                 <div class="result">
                 <table style="width:800px">
 
+                    {% if result.error %}
+                        <tr>
+                        <td class="title"><b>Błąd:</b></td>
+                        <td>{{ result.error }}</td>
+                        </tr>
+
+                        <tr>
+                        <td class="title"><b>Szczegóły błędu:</b></td>
+                        <td>{{ result.error_traceback | linebreaksbr}}</td>
+                        </tr>
+                    {% endif %}
+
                     <tr>
-                    <td class="title"><b>Goal:</b></td>
-                    <td>
-                    {{ result.goal_achieved | default:'unknown' }}</td>
+                    <td class="title"><b>Punkty:</b></td>
+                    <td>{{ result.points }}</td>
                     </tr>
 
                     <tr>
-                    <td class="title"><b>Błąd:</b></td>
-                    <td>{{ result.error }}</td>
+                    <td class="title"><b>Czas wykonania zadania:</b></td>
+                    <td>{{ result.task_time }}</td>
+                    </tr>
+
+                    <tr>
+                    <td class="title"><b>Robot zakończył przejazd:</b></td>
+                    <td>{{ result.finished }}</td>
                     </tr>
 
                     <tr>
