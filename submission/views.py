@@ -119,6 +119,8 @@ def submit(request):
 
             return my_results(
                 request, message=_(u'Rozwiązanie zostało wysłane.'))
+        else:
+            print form.errors
 
     return render_submit(request, params)
 

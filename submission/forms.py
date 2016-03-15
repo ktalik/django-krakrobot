@@ -29,12 +29,12 @@ class ContentTypeRestrictedFileField(forms.FileField):
         super(ContentTypeRestrictedFileField, self).__init__(*args, **kwargs)
 
     def clean(self, *args, **kwargs):
-        data = super(ContentTypeRestrictedFileField, self).clean(*args, **kwargs)
-
-        file = data.file
+        file = super(ContentTypeRestrictedFileField, self).clean(*args, **kwargs)
         try:
             content_type = file.content_type
+            print "Submission content type: {}".format(content_type)
             if content_type in self.content_types:
+                print "Submission file size: {}".format(file._size)
                 if file._size > self.max_upload_size:
                     raise forms.ValidationError(
                         _('Please keep filesize under %(size_limit)s. Current filesize %(current_size)s'),
@@ -44,16 +44,21 @@ class ContentTypeRestrictedFileField(forms.FileField):
                         }
                     )
             else:
-                raise forms.ValidationError(_('Filetype not supported.'))
+                raise forms.ValidationError(
+                    _("Filetype '%(current_type)s' is not supported."),
+                    params={
+                        'current_type': file.content_type
+                    }
+                )
         except AttributeError:
-            pass
+            raise
 
         return data
 
 
 class UploadSubmissionForm(forms.Form):
     file  = ContentTypeRestrictedFileField(
-        content_types=['application/zip'],
+        content_types=['application/zip', 'application/x-zip-compressed', 'application/x-tar', 'application/x-gtar'],
         max_upload_size=1310720,
     )
 
