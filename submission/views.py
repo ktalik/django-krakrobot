@@ -111,16 +111,7 @@ def submit(request):
                 for sub in submissions[2:]:
                     sub.delete()
 
-            try:
-                execute_tester(submission)
-            except Exception as error:
-                report = 'Blad wewnetrzny testerki: ' + str(error)
-                print 'ERROR:', report
-                db_result = Result()
-                db_result.submission_id = submission.id
-                db_result.report = json.dumps({'error': report})
-                db_result.log = ''
-                db_result.save()
+            execute_tester(submission)
 
             return my_results(
                 request, message=_(u'Rozwiązanie zostało wysłane.'))
@@ -139,66 +130,75 @@ def postpone(function):
 
 @postpone
 def execute_tester(submission):
-    s_id = submission.id
-    (s_path, s_pkg_name) = os.path.split(submission.package.path)
+    try:
+        s_id = submission.id
+        (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
-    # Move to the submission directory
-    os.chdir(s_path)
+        # Move to the submission directory
+        os.chdir(s_path)
 
-    s_cmd = './run.sh'
-    if not os.path.exists(s_cmd):
-        s_cmd = './run.py'
+        s_cmd = './run.sh'
         if not os.path.exists(s_cmd):
+            s_cmd = './run.py'
+            if not os.path.exists(s_cmd):
+                db_result = Result()
+                db_result.submission_id = s_id
+                db_result.report = json.dumps(
+                    {'error': 'Brakuje `run.sh` lub `run.py`!'})
+                db_result.log = ''
+                db_result.save()
+                return
+
+        submission.command = s_cmd
+        submission.save()
+
+        s_cmd = os.path.join(s_path, s_cmd)
+
+        os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
+
+        for test in TEST_FILE_NAMES:
+            map_path = os.path.join(
+                settings.STATIC_ROOT, 'maps', test)
+            result_file_name = os.path.join(
+                s_path, test + '_' + RESULT_JSON_FILE_NAME)
+
+            if not os.path.exists(result_file_name):
+                open(result_file_name, 'w').close()
+
+            cmd = [
+                'python2.7',
+                os.path.join(settings.BIN_DIR, 'simulator/main.py'),
+                '-c',
+                '--map', map_path,
+                '--robot', s_cmd,
+                '--output', result_file_name
+            ]
+            proc = subprocess.Popen(
+                cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            stdout, stderr = proc.communicate()
+
+            # Log testing process here
+            print s_id, 'stderr', stderr
+
+            # Log result
+            lines = stdout.splitlines()
+            result = json.load(open(result_file_name))
+
             db_result = Result()
             db_result.submission_id = s_id
-            db_result.report = json.dumps(
-                {'error': 'Brakuje `run.sh` lub `run.py`!'})
-            db_result.log = ''
+            db_result.report = json.dumps(result)
+            print s_id, 'report', db_result.report
+            db_result.log = stdout + stderr
             db_result.save()
-            return
-
-    submission.command = s_cmd
-    submission.save()
-
-    s_cmd = os.path.join(s_path, s_cmd)
-
-    os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
-
-    for test in TEST_FILE_NAMES:
-        map_path = os.path.join(
-            settings.STATIC_ROOT, 'maps', test)
-        result_file_name = os.path.join(
-            s_path, test + '_' + RESULT_JSON_FILE_NAME)
-
-        if not os.path.exists(result_file_name):
-            open(result_file_name, 'w').close()
-
-        cmd = [
-            'python2.7',
-            os.path.join(settings.BIN_DIR, 'simulator/main.py'),
-            '-c',
-            '--map', map_path,
-            '--robot', s_cmd,
-            '--output', result_file_name
-        ]
-        proc = subprocess.Popen(
-            cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        stdout, stderr = proc.communicate()
-
-        # Log testing process here
-        print s_id, 'stderr', stderr
-
-        # Log result
-        lines = stdout.splitlines()
-        result = json.load(open(result_file_name))
-
+            print '\n\nResult saved.\n\n'
+    except Exception as error:
+        report = 'Blad wewnetrzny testerki: ' + str(error)
+        print 'ERROR:', report
         db_result = Result()
-        db_result.submission_id = s_id
-        db_result.report = json.dumps(result)
-        print s_id, 'report', db_result.report
-        db_result.log = stdout + stderr
+        db_result.submission_id = submission.id
+        db_result.report = json.dumps({'error': report})
+        db_result.log = ''
         db_result.save()
-        print '\n\nResult saved.\n\n'
 
 
 def my_results(request, message=''):
