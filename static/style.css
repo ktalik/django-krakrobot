@@ -145,6 +145,15 @@ table {
 table.board {
     background-size: contain;
     padding: 0;
+    table-layout:fixed;
+    width:512px;
+    height:512px;
+    border: none;
+}
+
+table.board td {
+    overflow: hidden;
+    border:none;
 }
 
 table td.title {
