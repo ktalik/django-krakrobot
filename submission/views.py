@@ -108,7 +108,7 @@ def submit(request):
 
             submissions = get_submissions(team)
             if len(submissions) > 2:
-                for sub in submission[2:]:
+                for sub in submissions[2:]:
                     sub.delete()
 
             try:
