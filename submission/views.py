@@ -216,6 +216,7 @@ def my_results(request, message=''):
         }
 
         results = get_results(submission.id)
+        print "Number of results for this submission: {}".format(len(results))
         results_descriptions = []
         results_dicts = []
         if results:
