@@ -83,7 +83,7 @@ def render_submit(request, params={}):
 
     return render(request, 'submission/submit.html', params)
 
-    
+
 def submit(request):
     team = get_team(request.user)
     params = dict()
@@ -105,6 +105,11 @@ def submit(request):
                 submission.delete()
                 params['error'] = error
                 return render_submit(request, params)
+
+            submissions = get_submissions(team)
+            if len(submissions) > 2:
+                for sub in submission[2:]:
+                    sub.delete()
 
             try:
                 execute_tester(submission)
@@ -150,7 +155,7 @@ def execute_tester(submission):
     s_cmd = os.path.join(s_path, s_cmd)
 
     os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
-    
+
     for test in TEST_FILE_NAMES:
         map_path = os.path.join(
             settings.STATIC_ROOT, 'maps', test)
@@ -158,7 +163,7 @@ def execute_tester(submission):
             s_path, test + '_' + RESULT_JSON_FILE_NAME)
 
         if not os.path.exists(result_file_name):
-            open(result_file_name, 'w').close() 
+            open(result_file_name, 'w').close()
 
         cmd = [
             'python2.7',
@@ -191,7 +196,7 @@ def execute_tester(submission):
 def my_results(request, message=''):
     if not request.user.is_authenticated():
         return index(request)
-    
+
     response_params = {
         'submissions': [],
         'message': message,
@@ -265,7 +270,7 @@ def describe_results(results):
                 'maps',
                 map_json.get('vector_graphics_file', '')
             )
-            
+
             for r in d.get('map', {}).get('board', []):
                 row = []
                 for c in r:
