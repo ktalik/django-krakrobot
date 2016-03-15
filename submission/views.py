@@ -129,7 +129,15 @@ def submit(request):
 
     return render_submit(request, params)
 
+from threading import Thread
+def postpone(function):
+  def decorator(*args, **kwargs):
+    t = Thread(target = function, args=args, kwargs=kwargs)
+    t.daemon = True
+    t.start()
+  return decorator
 
+@postpone
 def execute_tester(submission):
     s_id = submission.id
     (s_path, s_pkg_name) = os.path.split(submission.package.path)
