@@ -53,7 +53,7 @@ class ContentTypeRestrictedFileField(forms.FileField):
         except AttributeError:
             raise
 
-        return data
+        return file
 
 
 class UploadSubmissionForm(forms.Form):
