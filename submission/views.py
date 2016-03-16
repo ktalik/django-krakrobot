@@ -157,6 +157,7 @@ def execute_tester(submission):
         os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
 
         for test in TEST_FILE_NAMES:
+            print "Running simulator for '{}' map".format(test)
             map_path = os.path.join(
                 settings.STATIC_ROOT, 'maps', test)
             result_file_name = os.path.join(
