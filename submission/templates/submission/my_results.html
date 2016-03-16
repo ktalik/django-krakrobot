@@ -59,6 +59,12 @@ API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych probl
                 <h2>
                 Test: <b>{{ result.test_name }}</b>
                 </h2>
+                <h3>Parametry:</h3>
+                <div>
+                    steering_noise: <b>{{ result.parameters.steering_noise }}</b><br/>
+                    distance_noise: <b>{{ result.parameters.distance_noise }}</b><br/>
+                    forward_steering_drift: <b>{{ result.parameters.forward_steering_drift }}</b><br/>
+                </div>
 
                 <div class="result">
                 <table style="width:800px">
