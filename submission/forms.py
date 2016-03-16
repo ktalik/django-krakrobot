@@ -58,7 +58,7 @@ class ContentTypeRestrictedFileField(forms.FileField):
 
 class UploadSubmissionForm(forms.Form):
     file  = ContentTypeRestrictedFileField(
-        content_types=['application/zip', 'application/x-zip-compressed', 'application/x-tar', 'application/x-gtar'],
+        content_types=['application/zip', 'application/x-zip-compressed', 'application/x-tar', 'application/x-gtar', 'binary/octet-stream'],
         max_upload_size=1310720,
     )
 
