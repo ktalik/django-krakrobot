@@ -26,6 +26,20 @@ SUBMISSION_DEADLINE = time.struct_time([2016, 5, 10, 0, 0, 0, 0, 0, 0])
 RESULT_JSON_FILE_NAME = 'result.json'
 
 TEST_FILE_NAMES = ['1.map', '2.map']
+TEST_SUITES = [
+    {
+        'map': '1.map',
+        'steering_noise': 4e-6,
+        'distance_noise': 1e-5,
+        'forward_steering_drift': 8e-5
+    },
+    {
+        'map': '2.map',
+        'steering_noise': 4e-5,
+        'distance_noise': 6e-4,
+        'forward_steering_drift': -4e-4
+    }
+]
 
 
 def get_id():
@@ -156,12 +170,12 @@ def execute_tester(submission):
 
         os.chmod(s_cmd, stat.S_IEXEC | stat.S_IREAD)
 
-        for test in TEST_FILE_NAMES:
-            print "Running simulator for '{}' map".format(test)
+        for test_suite in TEST_SUITES:
+            print "Running simulator for test suite: {}".format(test_suite)
             map_path = os.path.join(
-                settings.STATIC_ROOT, 'maps', test)
+                settings.STATIC_ROOT, 'maps', test_suite['map'])
             result_file_name = os.path.join(
-                s_path, test + '_' + RESULT_JSON_FILE_NAME)
+                s_path, test_suite['map'] + '_' + RESULT_JSON_FILE_NAME)
 
             if not os.path.exists(result_file_name):
                 open(result_file_name, 'w').close()
@@ -172,7 +186,10 @@ def execute_tester(submission):
                 '-c',
                 '--map', map_path,
                 '--robot', s_cmd,
-                '--output', result_file_name
+                '--output', result_file_name,
+                '--steering_noise', test_suite['steering_noise'],
+                '--distance_noise', test_suite['distance_noise'],
+                '--forward_steering_drift', test_suite['forward_steering_drift']
             ]
             proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
