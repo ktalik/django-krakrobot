@@ -187,9 +187,9 @@ def execute_tester(submission):
                 '--map', map_path,
                 '--robot', s_cmd,
                 '--output', result_file_name,
-                '--steering_noise', test_suite['steering_noise'],
-                '--distance_noise', test_suite['distance_noise'],
-                '--forward_steering_drift', test_suite['forward_steering_drift']
+                '--steering_noise', str(test_suite['steering_noise']),
+                '--distance_noise', str(test_suite['distance_noise']),
+                '--forward_steering_drift', str(test_suite['forward_steering_drift'])
             ]
             proc = subprocess.Popen(
                 cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -279,12 +279,12 @@ def describe_results(results):
             if not result_string:
                 d = {"error": "No result"}
                 results_dicts.append(d)
-                break
+                continue
 
             d = json.loads(result_string)
-            if 'error' in d and d['error']:
-                results_dicts.append(d)
-                break
+            #if 'error' in d and d['error']:
+            #    results_dicts.append(d)
+            #    break
 
             d['log'] = result.log.splitlines()
 
