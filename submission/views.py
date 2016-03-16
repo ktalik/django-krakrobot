@@ -12,6 +12,7 @@ import uuid
 from django.shortcuts import render_to_response, redirect
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
+from django.contrib import messages
 from django.shortcuts import render
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
@@ -126,9 +127,10 @@ def submit(request):
                     sub.delete()
 
             execute_tester(submission)
-
-            return my_results(
-                request, message=_(u'Rozwiązanie zostało wysłane.'))
+            messages.add_message(request, messages.INFO, _(u'Rozwiązanie zostało wysłane'))
+            return redirect('my_results')
+            #return my_results(
+            #    request, message=_(u'Rozwiązanie zostało wysłane.'))
         else:
             print form.errors
 
@@ -222,6 +224,10 @@ def execute_tester(submission):
 def my_results(request, message=''):
     if not request.user.is_authenticated():
         return index(request)
+
+    message_list = list(messages.get_messages(request))
+    if message_list and (not message or message == ''):
+        message = message_list[0]
 
     response_params = {
         'submissions': [],
