@@ -336,10 +336,16 @@ def results(request):
     params = {'teams': []}
 
     for team in teams:
-        passed = team.passed
+        submissions = get_submissions(team)
+        results = sum([list(get_results(submission.id)) for submission in submissions], [])
+        reports = [json.loads(result.report) for result in results]
+
+        passed = any([True if "points" in report else False for report in reports])
+        max_points = max([report['points'] for report in reports if "points" in report] + [0])
+
         if team.name != 'TestTeam':
             params["teams"].append(
-                {'name': team.name, 'passed': passed, 'avatar': team.avatar})
+                {'name': team.name, 'passed': passed, 'max_points': max_points, 'avatar': team.avatar})
 
     params['submission_ended'] = time.localtime() > SUBMISSION_DEADLINE
     return render(request, 'submission/results.html', params)

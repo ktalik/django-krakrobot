@@ -29,14 +29,15 @@
     <td class="teamresult">
     {% if team.passed %}
         <p style="background-color:lightgreen;">
-        Drużyna zaliczyła zdanie!
+        Przynajmniej jedne zakończony poprawnie przejazd. <br/>
+        Maksymalna zdobyta liczba punktów: <b> {{ team.max_points }} </b>
         </p>
     {% else %}
         <p>
         {% if submission_ended %}
             Drużyna nie zaliczyła zadania
         {% else %}
-            Drużyna wciąż próbuje
+            Drużyna jeszcze nie zakończyła poprawnie żadnego przejazdu.
         {% endif %}
         </p>
     {% endif %}
