@@ -313,7 +313,9 @@ def describe_results(results):
                 d['picture'].append(row)
 
             for num, beep in enumerate(d['beeps']):
-                d['picture'][int(beep[0])][int(beep[1])]['beep'] = str(num)
+                # beep tuple has coordinate order x, y
+                # but here make the coordinate order: y, x - for easier display in template
+                d['picture'][int(beep[1])][int(beep[0])]['beep'] = str(num)
 
             for r, row in enumerate(d.get('map', {}).get('board', {})):
                 for c, col in enumerate(row):
