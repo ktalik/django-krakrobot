@@ -292,7 +292,7 @@ def describe_results(results):
             #    results_dicts.append(d)
             #    break
 
-            d['log'] = result.log.splitlines()
+            d['log'] = result.log
 
             d['picture'] = []
 

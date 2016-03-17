@@ -157,11 +157,8 @@ API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych probl
                     <td class="title"><b>Log:</b></td>
                     <td class="log">
                         <div style="width: 700px;">
-                            <p>
-                {% for line in result.log %}
-                    {{ line }}<br>
-                {% endfor %}
-                            </p>
+                            <pre style="font-family:monospace;">{{ result.log }}
+                            </pre>
                         </div>
                     </td>
                     </tr>
