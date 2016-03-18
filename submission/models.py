@@ -52,7 +52,7 @@ class Submission(models.Model):
             result.delete()
         dir_path = os.path.dirname(self.package.path)
         print "Submission directory path to delete: {}".format(dir_path)
-        # shutil.rmtree(dir_path, ignore_errors=True)
+        shutil.rmtree(dir_path, ignore_errors=True)
         super(Submission, self).delete(*args, **kwargs)
 
 
