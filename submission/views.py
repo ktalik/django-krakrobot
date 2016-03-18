@@ -176,7 +176,7 @@ def execute_tester(submission):
                 db_result = Result()
                 db_result.submission = submission
                 db_result.report = json.dumps(
-                    {'error': 'Brakuje `run.sh` lub `run.py`!'})
+                    {'service_error': 'Brakuje `run.sh` lub `run.py`!'})
                 db_result.log = ''
                 db_result.save()
                 return
@@ -231,8 +231,8 @@ def execute_tester(submission):
         report = 'Blad wewnetrzny testerki: ' + str(error)
         print 'ERROR:', report
         db_result = Result()
-        db_result.report = json.dumps({'error': report})
         db_result.submission = submission
+        db_result.report = json.dumps({'service_error': report})
         db_result.log = ''
         db_result.save()
 
@@ -291,7 +291,7 @@ def describe_results(results):
 
     results_dicts = []
     for result in results:
-        result_string = '{}'
+        # results_string = '{}'
         if len(results) == 0:
             d = STATUS_PROCESSING
         else:
@@ -299,14 +299,14 @@ def describe_results(results):
             result_string = result.report
 
             if not result_string:
-                d = {"error": "No result"}
+                d = {"service_error": "No result"}
                 results_dicts.append(d)
                 continue
 
             d = json.loads(result_string)
-            #if 'error' in d and d['error']:
-            #    results_dicts.append(d)
-            #    break
+            if 'service_error' in d and d['service_error']:
+                results_dicts.append(d)
+                continue
 
             d['log'] = result.log
 

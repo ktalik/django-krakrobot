@@ -37,7 +37,7 @@ Przetwarzanie... Twoje rozwiązanie jest właśnie testowane. Spróbuj ponownie 
 API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych problemów, prosimy o kontakt.
             </div>
 
-        {% elif "error" in submission and submission.error %}
+        {% elif submission.error %}
             <div class="warning">
             {{ submission.error }}
             </div>
@@ -46,15 +46,15 @@ API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych probl
 
             {% for result in submission.results %}
 
-                {% if "error" in result and result.error %}
+                {% if result.service_error %}
 
-                <div class="test">
-
+                <div class="error">
+                    <h1>Błąd testerki: </h1>
+                    <p>{{ result.service_error }}</p>
+                </div>
                 {% else %}
 
                 <div class="test">
-
-                {% endif %}
 
                 <h2>
                 Test: <b>{{ result.test_name }}</b>
@@ -165,6 +165,7 @@ API symulatora nie działa. Spróbuj ponownie za chwilę. W razie dalszych probl
                 </table>
 
                 </div>
+                {% endif %}
             </div>
             {% endfor %}
         {% endif %}
