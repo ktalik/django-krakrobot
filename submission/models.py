@@ -14,16 +14,23 @@ import forms
 
 DB_NAME_LENGTH = 100
 
+def generate_code():
+    uid = uuid.uuid4()
+    return uid.hex
 
 class Team(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=DB_NAME_LENGTH)
-    user = models.ForeignKey(User)
-    passed = models.BooleanField()
+    user = models.ForeignKey(User, null=True, blank=True)
+    passed = models.BooleanField(blank=True, default=False)
     avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
+    registration_code = models.CharField(max_length=32, default=generate_code, blank=True)
 
     def __unicode__(self):
         return self.name
+
+    def regenerate_code(self):
+        self.registration_code = generate_code()
 
 
 def submission_directory_path(instance, filename):
