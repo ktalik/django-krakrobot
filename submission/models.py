@@ -1,6 +1,7 @@
 import time
 import uuid
 import shutil
+import os
 
 from django.db import models
 from django.template.defaultfilters import filesizeformat
