@@ -1,7 +1,11 @@
 from django import forms
+from django.core.exceptions import ObjectDoesNotExist
+from django.contrib.auth.models import User
+from django.contrib.auth.forms import UserCreationForm
 from django.template.defaultfilters import filesizeformat
 from django.utils.translation import ugettext_lazy as _
 
+from submission.models import Team
 
 class ContentTypeRestrictedFileField(forms.FileField):
     """
@@ -62,3 +66,20 @@ class UploadSubmissionForm(forms.Form):
         max_upload_size=1310720,
     )
 
+class CodeRequiredUserCreationForm(UserCreationForm):
+    registration_code = forms.CharField(min_length=32, max_length=32)
+
+    class Meta(UserCreationForm.Meta):
+        model = User
+        fields = UserCreationForm.Meta.fields + ('registration_code',)
+
+    def clean_registration_code(self):
+        code = self.cleaned_data['registration_code']
+        try:
+            team = Team.objects.get(registration_code=self.cleaned_data['registration_code'])
+            if team.user:
+                raise forms.ValidationError(_("The team with this registration code already has a user."))
+        except ObjectDoesNotExist:
+            raise forms.ValidationError(_("The given registration code does not belong to any team."))
+
+        return code

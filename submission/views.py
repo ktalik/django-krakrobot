@@ -17,7 +17,7 @@ from django.shortcuts import render
 from django.template import RequestContext
 from django.utils.translation import ugettext_lazy as _
 
-import forms
+from forms import CodeRequiredUserCreationForm, UploadSubmissionForm
 import utils
 
 from models import Submission, Team, Result
@@ -86,13 +86,30 @@ def get_results(id_number):
 def index(request, params={}):
     return render(request, 'submission/index.html', params)
 
+def register(request):
+    if request.method == "POST":
+        form = CodeRequiredUserCreationForm(request.POST)
+        if form.is_valid():
+            registration_code = request.POST.get('registration_code')
+            team = Team.objects.get(registration_code=registration_code)
+            new_user = form.save()
+            team.user = new_user
+            team.save()
+            user = authenticate(username=request.POST.get('username'), password=request.POST.get('password1'))
+            login(request, user)
+            return redirect("submit")
+    else:
+        form = CodeRequiredUserCreationForm()
+    return render(request, "submission/register.html", {
+        'form': form,
+    })
 
 def render_submit(request, params={}):
     team = get_team(request.user)
     submission_end = time.localtime() > SUBMISSION_DEADLINE
 
     if not 'form' in params:
-        params['form'] = forms.UploadSubmissionForm()
+        params['form'] = UploadSubmissionForm()
 
     params.update({'submission_end': submission_end, 'team': team})
 
@@ -104,7 +121,7 @@ def submit(request):
     params = dict()
 
     if request.method == 'POST':
-        form = forms.UploadSubmissionForm(request.POST, request.FILES)
+        form = UploadSubmissionForm(request.POST, request.FILES)
         params['form'] = form
 
         if form.is_valid():
