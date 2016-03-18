@@ -1,5 +1,6 @@
 import time
 import uuid
+import shutil
 
 from django.db import models
 from django.template.defaultfilters import filesizeformat
@@ -45,6 +46,14 @@ class Submission(models.Model):
     def __unicode__(self):
         return unicode(self.date) + ' ' + unicode(self.id) + \
             ' - submitted by: ' + unicode(self.team)
+
+    def delete(self, *args, **kwargs):
+        for result in Result.objects.filter(submission_id__exact = self.id):
+            result.delete()
+        dir_path = os.path.dirname(self.package.path)
+        print "Submission directory path to delete: {}".format(dir_path)
+        # shutil.rmtree(dir_path, ignore_errors=True)
+        super(Submission, self).delete(*args, **kwargs)
 
 
 class Result(models.Model):
