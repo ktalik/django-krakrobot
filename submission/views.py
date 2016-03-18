@@ -105,7 +105,7 @@ def register(request):
     })
 
 def render_submit(request, params={}):
-    team = get_team(request.user)
+    team = request.user.team
     submission_end = time.localtime() > SUBMISSION_DEADLINE
 
     if not 'form' in params:
@@ -117,7 +117,7 @@ def render_submit(request, params={}):
 
 
 def submit(request):
-    team = get_team(request.user)
+    team = request.user.team
     params = dict()
 
     if request.method == 'POST':
@@ -138,7 +138,7 @@ def submit(request):
                 params['error'] = error
                 return render_submit(request, params)
 
-            submissions = get_submissions(team)
+            submissions = team.submission_set.all()
             if len(submissions) > 2:
                 for sub in submissions[2:]:
                     sub.delete()
@@ -164,7 +164,6 @@ def postpone(function):
 @postpone
 def execute_tester(submission):
     try:
-        s_id = submission.id
         (s_path, s_pkg_name) = os.path.split(submission.package.path)
 
         # Move to the submission directory
@@ -175,7 +174,7 @@ def execute_tester(submission):
             s_cmd = './run.py'
             if not os.path.exists(s_cmd):
                 db_result = Result()
-                db_result.submission_id = s_id
+                db_result.submission = submission
                 db_result.report = json.dumps(
                     {'error': 'Brakuje `run.sh` lub `run.py`!'})
                 db_result.log = ''
@@ -215,16 +214,16 @@ def execute_tester(submission):
             stdout, stderr = proc.communicate()
 
             # Log testing process here
-            print s_id, 'stderr', stderr
+            print submission.id, 'stderr', stderr
 
             # Log result
             lines = stdout.splitlines()
             result = json.load(open(result_file_name))
 
             db_result = Result()
-            db_result.submission_id = s_id
+            db_result.submission = submission
             db_result.report = json.dumps(result)
-            print s_id, 'report', db_result.report
+            print submission.id, 'report', db_result.report
             db_result.log = stdout + stderr
             db_result.save()
             print '\n\nResult saved.\n\n'
@@ -232,8 +231,8 @@ def execute_tester(submission):
         report = 'Blad wewnetrzny testerki: ' + str(error)
         print 'ERROR:', report
         db_result = Result()
-        db_result.submission_id = submission.id
         db_result.report = json.dumps({'error': report})
+        db_result.submission = submission
         db_result.log = ''
         db_result.save()
 
@@ -252,11 +251,11 @@ def my_results(request, message=''):
         'team': None
     }
 
-    team = get_team(request.user)
+    team = request.user.team
     if team:
         response_params['team'] = team
 
-    submissions = get_submissions(team)
+    submissions = team.submission_set.all()
 
     for submission in submissions:
         submission_dict = {
@@ -264,7 +263,7 @@ def my_results(request, message=''):
             'user': submission.user.username
         }
 
-        results = get_results(submission.id)
+        results = submission.result_set.all()
         print "Number of results for this submission: {}".format(len(results))
         results_descriptions = []
         results_dicts = []
@@ -355,8 +354,10 @@ def results(request):
     params = {'teams': []}
 
     for team in teams:
-        submissions = get_submissions(team)
-        results = sum([list(get_results(submission.id)) for submission in submissions], [])
+        submissions = team.submission_set.all()
+        results = []
+	for submission in submissions:
+            results.extend(submission.result_set.all())
         reports = [json.loads(result.report) for result in results]
 
         passed = any([True if "points" in report else False for report in reports])

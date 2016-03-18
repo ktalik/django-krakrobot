@@ -9,9 +9,6 @@ from django.contrib.auth.models import User
 from django.utils import timezone
 from django.utils.translation import ugettext_lazy as _
 
-import forms
-
-
 DB_NAME_LENGTH = 100
 
 def generate_code():
@@ -21,7 +18,7 @@ def generate_code():
 class Team(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     name = models.CharField(max_length=DB_NAME_LENGTH)
-    user = models.ForeignKey(User, null=True, blank=True)
+    user = models.OneToOneField(User, on_delete=models.SET_NULL, null=True, blank=True)
     passed = models.BooleanField(blank=True, default=False)
     avatar = models.ImageField(upload_to='avatars', null=True, blank=True)
     registration_code = models.CharField(max_length=32, default=generate_code, blank=True)
@@ -56,8 +53,6 @@ class Submission(models.Model):
             ' - submitted by: ' + unicode(self.team)
 
     def delete(self, *args, **kwargs):
-        for result in Result.objects.filter(submission_id__exact = self.id):
-            result.delete()
         dir_path = os.path.dirname(self.package.path)
         print "Submission directory path to delete: {}".format(dir_path)
         shutil.rmtree(dir_path, ignore_errors=True)
@@ -66,7 +61,7 @@ class Submission(models.Model):
 
 class Result(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
-    submission_id = models.UUIDField(primary_key=False, default=uuid.uuid4, editable=False)
+    submission = models.ForeignKey(Submission)
     report = models.CharField(max_length=1000, default='{}')
     log = models.CharField(max_length=10000, default='')
 
